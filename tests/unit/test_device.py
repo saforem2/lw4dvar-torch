@@ -24,3 +24,12 @@ def test_none_device_uses_ezpz(monkeypatch):
     monkeypatch.setitem(sys.modules, "ezpz", ezpz)
 
     assert forecast_model.resolve_device() == torch.device("cpu")
+
+
+def test_auto_device_falls_back_for_legacy_ezpz(monkeypatch):
+    monkeypatch.setitem(sys.modules, "ezpz", types.ModuleType("ezpz"))
+    if hasattr(torch, "xpu"):
+        monkeypatch.setattr(torch.xpu, "is_available", lambda: False)
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+
+    assert forecast_model.resolve_device("auto") == torch.device("cuda")

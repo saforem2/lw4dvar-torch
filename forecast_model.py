@@ -43,15 +43,17 @@ def resolve_device(device: str | torch.device | None = None) -> torch.device:
 
     ``None`` and ``"auto"`` defer selection to ezpz, which honors
     ``TORCH_DEVICE`` and detects XPU, CUDA, MPS, and CPU. The fallback keeps
-    lightweight CPU-only uses of this repository working when ezpz is not
-    installed (for example, metadata-only tools).
+    lightweight uses working when ezpz is unavailable or predates the device
+    selection API (for example, older system environments).
     """
     if device is not None and str(device).lower() != "auto":
         return torch.device(device)
     try:
         import ezpz
 
-        return torch.device(ezpz.get_torch_device(as_torch_device=True))
+        get_torch_device = getattr(ezpz, "get_torch_device", None)
+        if get_torch_device is not None:
+            return torch.device(get_torch_device(as_torch_device=True))
     except ImportError:
         if hasattr(torch, "xpu") and torch.xpu.is_available():
             return torch.device("xpu")
