@@ -45,18 +45,20 @@ cd lw4dvar-torch
 
 ### 2. Prepare the mini ACE2 environment
 
-The existing XPU environment supplies Torch. The new venv contains FME and ACE2 test dependencies.
+The standard ALCF setup is `source <(curl -fsSL https://ezpz.cool/utils.sh) && ezpz_setup_env`. This run preserves the existing XPU Torch environment, so it uses `ezpz_ensure_uv` to create a separate venv and `ezpz_setup "$TEST"` in the test job.
+
+The recorded install used `ensurepip` and `pip` because `uv` was not on `PATH` in that shell. The commands below use `uv` for environment creation and package installation.
 
 ```bash
 BASE="$HOME/.ezpz-venvs/ezpz-xpu-py312"
-TEST="$HOME/.ezpz-venvs/lw4dvar-mini-ace2-py312"
+TEST="$HOME/.ezpz-venvs/lw4dvar-mini-ace2-uv-py312"
 BASE_SITE="$($BASE/bin/python -c 'import site; print(site.getsitepackages()[0])')"
 
-"$BASE/bin/python" -m ensurepip --upgrade
-"$BASE/bin/python" -m venv --system-site-packages "$TEST"
-PYTHONPATH="$BASE_SITE" "$TEST/bin/python" -m pip install \
+source <(curl -fsSL https://ezpz.cool/utils.sh) && ezpz_ensure_uv
+uv venv --python="$BASE/bin/python" --system-site-packages "$TEST"
+PYTHONPATH="$BASE_SITE" uv pip install --python "$TEST/bin/python" \
   fme==2026.5.1 torch-harmonics==0.8.0
-
+"$TEST/bin/python" -c 'import torch, fme, torch_harmonics; print(torch.__version__)'
 TEST_SITE="$($TEST/bin/python -c 'import site; print(site.getsitepackages()[0])')"
 ```
 
@@ -65,7 +67,8 @@ The mini test downloads the public fixture checkpoint into `~/.cache/lw4dvar` wh
 ### 3. Submit the XPU smoke
 
 ```bash
-XPU_SETUP="cd $PWD && source $BASE/bin/activate"
+BASE="$HOME/.ezpz-venvs/ezpz-xpu-py312"
+XPU_SETUP="cd $PWD && source <(curl -fsSL https://ezpz.cool/utils.sh) && ezpz_setup $BASE"
 "$BASE/bin/ezpz" submit \
   -N 1 -t 00:10:00 -q workq -A datascience \
   --filesystems tegu:home --job-name lw4dvar-xpu-final \
@@ -78,6 +81,10 @@ Expected output includes `device=xpu`, the XPU Torch version, a finite loss, and
 ### 4. Submit the mini ACE2 solver test
 
 ```bash
+BASE="$HOME/.ezpz-venvs/ezpz-xpu-py312"
+TEST="$HOME/.ezpz-venvs/lw4dvar-mini-ace2-uv-py312"
+BASE_SITE="$($BASE/bin/python -c 'import site; print(site.getsitepackages()[0])')"
+TEST_SITE="$($TEST/bin/python -c 'import site; print(site.getsitepackages()[0])')"
 ACE2_SETUP="source <(curl -fsSL https://ezpz.cool/utils.sh) && ezpz_setup $TEST && export PYTHONPATH=$TEST_SITE:$BASE_SITE"
 "$BASE/bin/ezpz" submit \
   -N 1 -t 00:30:00 -q workq -A datascience \
