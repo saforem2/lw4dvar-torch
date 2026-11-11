@@ -15,7 +15,7 @@ exp:
   exp_name: 'smoke_test_aurora'
 
   path_model: './backends/aurora/hf_cache/models--microsoft--aurora/snapshots/a96afd7ee6d65e3bd2d476f3be798a25a56f2296/'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   ic_cache: './ic_cache/'
   print_every: 1

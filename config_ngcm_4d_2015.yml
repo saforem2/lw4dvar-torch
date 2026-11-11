@@ -35,7 +35,7 @@ exp:
   ngcm_step: 51660
   ngcm_data: '/scratch4/BMC/gsienkf/whitaker/ngcm_data/era5_ace2l32_tl63'
   ngcm_train_path: '/scratch4/BMC/gsienkf/whitaker/python/ngcm-train'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   print_every: 50
   oberrstart: -1.0

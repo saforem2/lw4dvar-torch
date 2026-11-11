@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from estimate_latent_b import LatentProbe, era5_state, l_power, utils, ace2_ic, th  # noqa: E402
 from check_latent_b_cov import POINTS, RD, FIELDS, geostrophic, geo_stats  # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import forecast_model
 from latent_b import EnsembleB  # noqa: E402
 
 
@@ -42,17 +43,17 @@ def main():
     locs = [float(x) for x in args.locs.split(',')]
 
     path_model = os.path.join(args.path_model, '')
-    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'cuda'})
+    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'auto'})
     dev = model.device
     d = torch.load(args.samples, weights_only=False)
     meta = d['meta']
     ckpt = os.path.join(path_model, 'ace2_era5_ckpt.tar')
     print(f"{meta['n_samples']} samples, checkpoint {meta['checkpoint']} (sha {meta['checkpoint_sha256'][:12]}); "
           f"running {ckpt}", flush=True)
-    m0 = torch.cuda.memory_allocated()
+    m0 = forecast_model.device_memory_allocated(model.device)
     samples = d['samples'].to(dev)
     del d
-    print(f"samples on GPU: {(torch.cuda.memory_allocated() - m0) / 1e9:.1f} GB", flush=True)
+    print(f"samples on GPU: {(forecast_model.device_memory_allocated(model.device) - m0) / 1e9:.1f} GB", flush=True)
     C, H, W = model.latent_shape
     grid = meta['sht_grid']
     hgt = ace2_ic.load_hgtsfc(path_model + 'forcing_data')
@@ -74,17 +75,17 @@ def main():
     # ---- 3. cost
     for loc, B in Bs.items():
         v = torch.randn(B.control_shape, dtype=torch.float64, device=dev, requires_grad=True)
-        torch.cuda.synchronize()
-        torch.cuda.reset_peak_memory_stats()
-        base = torch.cuda.memory_allocated()
+        forecast_model.synchronize_device(model.device)
+        forecast_model.reset_device_peak_memory_stats(model.device)
+        base = forecast_model.device_memory_allocated(model.device)
         t0 = time.time()
         for _ in range(5):
             z = B(v)
             z.pow(2).sum().backward()
-        torch.cuda.synchronize()
+        forecast_model.synchronize_device(model.device)
         print(f"loc {loc:.0f} km: control {tuple(B.control_shape)} ({v.numel()} values), "
               f"B fwd+bwd {(time.time() - t0) / 5 * 1e3:.1f} ms, peak extra memory "
-              f"{(torch.cuda.max_memory_allocated() - base) / 1e9:.2f} GB", flush=True)
+              f"{(forecast_model.device_memory_allocated(model.device, peak=True) - base) / 1e9:.2f} GB", flush=True)
 
     # ---- 1. single ob
     with open(glob.glob(os.path.join(meta['run_dir'], f'{args.single_ob_date}_control_inputs_*.pkl'))[0], 'rb') as fh:

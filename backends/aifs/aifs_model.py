@@ -177,7 +177,7 @@ class AIFSModel(forecast_model.LatentForecastModel):
     boundary is deliberately left unformalized for now.
     """
 
-    def __init__(self, checkpoint_path: str, config_path: str, device: str = "cuda",
+    def __init__(self, checkpoint_path: str, config_path: str, device: str | torch.device | None = None,
                  autocast_dtype: Optional[Union[str, torch.dtype]] = None,
                  compile_wrapper: bool = False, attention: Optional[str] = None):
         """
@@ -245,7 +245,8 @@ class AIFSModel(forecast_model.LatentForecastModel):
         # that only need checkpoint metadata (aifs_ic.py's prefetch, run from
         # a login node with no GPU) can request device='cpu' without editing
         # the yaml, while the H100 driver gets 'cuda'.
-        if device == "cuda":
+        device = forecast_model.resolve_device(device)
+        if device.type == "cuda":
             # The forward rollout already runs its heaviest ops under a
             # reduced-precision torch.autocast (see _predict_step_with_grad*
             # -- fp16 by default, from the checkpoint's own recorded

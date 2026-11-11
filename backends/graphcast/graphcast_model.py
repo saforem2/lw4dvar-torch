@@ -91,11 +91,11 @@ class GraphCastState:
 
 
 class GraphCastModel(forecast_model.LatentForecastModel):
-    def __init__(self, checkpoint_path: str, stats_dir: str, input_dir: str, device: str = "cuda",
+    def __init__(self, checkpoint_path: str, stats_dir: str, input_dir: str, device: str | torch.device | None = None,
                  frozen: "list[str] | None" = None):
         with open(checkpoint_path, "rb") as f:
             ckpt = checkpoint.load(f, gc.CheckPoint)
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
         self._input_dir = input_dir
         self.task_config = tc = ckpt.task_config
         self.model_config = ckpt.model_config

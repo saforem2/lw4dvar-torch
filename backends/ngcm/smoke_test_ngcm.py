@@ -31,7 +31,7 @@ import jax_datetime as jdt  # noqa: E402
 NGCM_TRAIN = os.environ.get("NGCM_TRAIN", "/scratch4/BMC/gsienkf/whitaker/python/ngcm-train")
 
 
-DEVICE = os.environ.get("NGCM_DEVICE", "cuda")
+DEVICE = None
 
 
 def rms(x):
@@ -39,8 +39,8 @@ def rms(x):
 
 
 def sync():
-    if DEVICE == "cuda":
-        torch.cuda.synchronize()
+    if DEVICE is not None and DEVICE.type in {"cuda", "xpu"}:
+        getattr(torch, DEVICE.type).synchronize()
 
 
 def main():

@@ -138,7 +138,7 @@ class NGCMModel(forecast_model.LatentForecastModel):
         step: int,
         data_dir: str,
         ngcm_train_path: str,
-        device: str = "cuda",
+        device: str | torch.device | None = None,
         use_ema: bool = True,
         plevs=hybrid_levels.DEFAULT_PLEVS,
         state_scales: "dict[str, float] | None" = None,
@@ -148,7 +148,7 @@ class NGCMModel(forecast_model.LatentForecastModel):
         self._coordinates, self._xarray_utils = coordinates, xarray_utils
         inference, model_lib = _import_ngcm_train(ngcm_train_path)
         self._model_lib = model_lib
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
         self._hybrid = xr.open_zarr(os.path.join(data_dir, "hybrid.zarr"))
         self._surface = xr.open_zarr(os.path.join(data_dir, "surface.zarr"))
         self._pressure = xr.open_zarr(os.path.join(data_dir, "pressure.zarr"))

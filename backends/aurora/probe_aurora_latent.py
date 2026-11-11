@@ -32,10 +32,13 @@ from datetime import datetime
 
 import torch
 
+import forecast_model
+
 from aurora import AuroraV1p5, Batch, Metadata
 from aurora.normalisation import locations as NORM_LOCATIONS
 from aurora.normalisation import scales as NORM_SCALES
 
+DEVICE = forecast_model.resolve_device()
 torch.manual_seed(0)
 
 CKPT_DIR = "backends/aurora/hf_cache/models--microsoft--aurora/snapshots/a96afd7ee6d65e3bd2d476f3be798a25a56f2296"
@@ -48,7 +51,7 @@ static_vars = {k: torch.from_numpy(v) for k, v in static_raw.items()}
 print("constructing model...")
 model = AuroraV1p5()
 model.load_checkpoint_local(f"{CKPT_DIR}/aurora-0.25-v1.5.ckpt")
-model = model.to("cuda")
+model = model.to(DEVICE)
 model.eval()
 for p in model.parameters():
     p.requires_grad_(False)
@@ -91,7 +94,7 @@ batch = Batch(
         time=(datetime(2015, 1, 1),),
         atmos_levels=LEVELS,
     ),
-).to("cuda")
+).to(DEVICE)
 
 captured = {}
 increment_holder = {"increment": None}
@@ -109,7 +112,7 @@ def _hook(module, args, kwargs):
 
 handle = model.decoder.register_forward_pre_hook(_hook, with_kwargs=True)
 
-lead_times = torch.full((B,), model.timestep.total_seconds() / 3600, device="cuda")
+lead_times = torch.full((B,), model.timestep.total_seconds() / 3600, device=DEVICE)
 
 print("running forward pass (no increment) to determine latent shape...")
 with torch.no_grad():
@@ -119,7 +122,7 @@ print(f"pred surf_vars keys: {sorted(pred.surf_vars.keys())}")
 print(f"pred atmos_vars keys: {sorted(pred.atmos_vars.keys())}")
 
 print("\nchecking differentiability: injecting a real increment via the hook...")
-increment = torch.zeros(captured["shape"], device="cuda", dtype=captured["dtype"], requires_grad=True)
+increment = torch.zeros(captured["shape"], device=DEVICE, dtype=captured["dtype"], requires_grad=True)
 increment_holder["increment"] = increment
 
 pred2 = model(batch, lead_times=lead_times)

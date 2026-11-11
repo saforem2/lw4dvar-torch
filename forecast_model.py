@@ -38,6 +38,66 @@ import numpy as np
 import torch
 
 
+def resolve_device(device: str | torch.device | None = None) -> torch.device:
+    """Resolve an explicit device or ask ezpz for the local accelerator.
+
+    ``None`` and ``"auto"`` defer selection to ezpz, which honors
+    ``TORCH_DEVICE`` and detects XPU, CUDA, MPS, and CPU. The fallback keeps
+    lightweight CPU-only uses of this repository working when ezpz is not
+    installed (for example, metadata-only tools).
+    """
+    if device is not None and str(device).lower() != "auto":
+        return torch.device(device)
+    try:
+        import ezpz
+
+        return torch.device(ezpz.get_torch_device(as_torch_device=True))
+    except ImportError:
+        if hasattr(torch, "xpu") and torch.xpu.is_available():
+            return torch.device("xpu")
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+
+
+def _device_runtime(device: str | torch.device):
+    device = torch.device(device)
+    return getattr(torch, device.type, None)
+
+
+def synchronize_device(device: str | torch.device) -> None:
+    """Synchronize an accelerator when its PyTorch runtime exposes one."""
+    device = torch.device(device)
+    runtime = _device_runtime(device)
+    synchronize = getattr(runtime, "synchronize", None)
+    if synchronize is not None:
+        if device.type == "mps":
+            synchronize()
+        else:
+            synchronize(device)
+
+
+def reset_device_peak_memory_stats(device: str | torch.device) -> None:
+    reset = getattr(_device_runtime(device), "reset_peak_memory_stats", None)
+    if reset is not None:
+        reset(torch.device(device))
+
+
+def device_memory_allocated(device: str | torch.device, *, peak: bool = False) -> int:
+    runtime = _device_runtime(device)
+    name = "max_memory_allocated" if peak else "memory_allocated"
+    measure = getattr(runtime, name, None)
+    return int(measure(torch.device(device))) if measure is not None else 0
+
+
+def empty_device_cache(device: str | torch.device) -> None:
+    empty = getattr(_device_runtime(device), "empty_cache", None)
+    if empty is not None:
+        empty()
+
+
 def area_weights_from_lats(lats: np.ndarray) -> np.ndarray:
     """Relative grid-cell areas (mean 1) for any grid organized in latitude
     rows -- regular lat-lon (with or without pole rows), Gaussian (unevenly

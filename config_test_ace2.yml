@@ -16,7 +16,7 @@ exp:
 
   path_model: './backends/ace2/ACE2-ERA5/'
   model_name: 'ace2_era5_ckpt.tar'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   ic_cache: './ic_cache_ace2/'
   print_every: 10

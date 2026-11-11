@@ -16,7 +16,7 @@ exp:
 
   # converted NGC package (backends/sfno/sfno_prefetch_checkpoint.py)
   path_model: './backends/sfno/ngc_cache/sfno_73ch_small/'
-  device: 'cuda'
+  device: 'auto'
   ps_operator: 'ps'
   path_output: './output/'
   # SFNO reuses FCN3's ERA5 cache + per-date 'sp' files (backends/sfno/sfno_ic.py)

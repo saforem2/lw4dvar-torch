@@ -152,7 +152,7 @@ class AuroraModel(forecast_model.LatentForecastModel):
     `FCN3Model.wrapper`.
     """
 
-    def __init__(self, package_root: str, device: str = "cuda",
+    def __init__(self, package_root: str, device: str | torch.device | None = None,
                  autocast_dtype: torch.dtype = torch.bfloat16,
                  use_fp16_safe_attention: bool = True,
                  compile_wrapper: bool = False):
@@ -247,12 +247,13 @@ class AuroraModel(forecast_model.LatentForecastModel):
             inductor-cached buffer references from cycle 1 becoming
             invalid once cycle 2 allocates fresh tensors, not confirmed).
         """
-        if device == "cuda":
+        device = forecast_model.resolve_device(device)
+        if device.type == "cuda":
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cudnn.allow_tf32 = True
             torch.backends.cudnn.benchmark = True
 
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
 
         with open(f"{package_root}/{_STATIC_NAME}", "rb") as f:
             static_raw = pickle.load(f)

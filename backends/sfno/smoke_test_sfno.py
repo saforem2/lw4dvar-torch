@@ -22,13 +22,14 @@ import numpy as np
 import torch
 
 sys.path.insert(0, ".")
+import forecast_model
 sys.path.insert(0, "backends/sfno")
 import sfno_ic  # noqa: E402
 from sfno_model import SFNOModel  # noqa: E402
 
 CACHE = "/scratch4/BMC/gsienkf/Jeffrey.Whitaker/long-window-4dvar-fcstnetv3/ic_cache/"
 N_STEPS = 2
-model = SFNOModel(device="cuda")
+model = SFNOModel(device=None)
 print(f"latent_shape={model.latent_shape} n_channels={len(model._channel_names)} timestep={model.timestep}")
 d0 = datetime.datetime(2015, 1, 1, tzinfo=datetime.timezone.utc)
 inp = sfno_ic.build_input_state(d0, CACHE)
@@ -99,13 +100,13 @@ assert min(losses[1:]) < losses[0]
 # (4)
 for steps in (1, 2, 4, 8):
     try:
-        torch.cuda.synchronize(); torch.cuda.reset_peak_memory_stats()
+        forecast_model.synchronize_device(model.device); forecast_model.reset_device_peak_memory_stats(model.device)
         inc = torch.zeros(model.latent_shape, device=model.device, requires_grad=True)
         t0 = time.time()
         out = model.advance(state0, steps=steps, use_checkpoint=True, latent_increment=inc)
         out.state[0, sp_col].mean().backward()
-        torch.cuda.synchronize()
-        print(f"[4] steps={steps}: fwd+bwd {time.time() - t0:.2f}s peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GiB")
+        forecast_model.synchronize_device(model.device)
+        print(f"[4] steps={steps}: fwd+bwd {time.time() - t0:.2f}s peak {forecast_model.device_memory_allocated(model.device, peak=True) / 2**30:.2f} GiB")
     except torch.OutOfMemoryError:
         print(f"[4] steps={steps}: OOM"); break
 print("ALL CHECKS PASSED")

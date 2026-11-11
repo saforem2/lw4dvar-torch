@@ -60,7 +60,7 @@ def _synthetic_fields():
 
 
 print("loading model...")
-model = AuroraModel(PACKAGE_ROOT, device="cuda")
+model = AuroraModel(PACKAGE_ROOT, device=None)
 print(f"latent_shape={model.latent_shape}, n_points={len(model.lats)}, timestep={model.timestep}")
 
 date0 = datetime.datetime(2015, 1, 1)

@@ -16,7 +16,7 @@ exp:
   model_name: 'aifs-single-mse-2.0-1.0deg-v1.0.ckpt'
   path_model: '/scratch4/BMC/gsienkf/Bo.Huang/expCodes/ML/lw4dvar-torch-dev/add-AIFSv2-1.00deg-v1.0/lw4dvar-torch-test/backends/aifs/aifs2-1.0deg-v1.0/'
   aifs_config: '/scratch4/BMC/gsienkf/Bo.Huang/expCodes/ML/lw4dvar-torch-dev/add-AIFSv2-1.00deg-v1.0/lw4dvar-torch-test/backends/aifs/aifs_inference_aifs2-1.0deg-v1.0.yaml'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   # separate from ic_cache/ic_cache_aifs1/ -- this checkpoint's native grid
   # (O96, 40320 points) and variable set (89 vars, no wave/snow) differ from

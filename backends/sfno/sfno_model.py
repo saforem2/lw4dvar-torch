@@ -47,7 +47,7 @@ DEFAULT_PACKAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ngc_
 
 
 class SFNOModel(FCN3Model):
-    def __init__(self, package_root: str = DEFAULT_PACKAGE, device: str = "cuda", latent_block: int = -2,
+    def __init__(self, package_root: str = DEFAULT_PACKAGE, device: str | torch.device | None = None, latent_block: int = -2,
                  autocast_dtype=None):
         """
         package_root : converted NGC package (sfno_prefetch_checkpoint.py).
@@ -66,11 +66,11 @@ class SFNOModel(FCN3Model):
         if isinstance(autocast_dtype, str):
             autocast_dtype = {"bf16": torch.bfloat16, "bfloat16": torch.bfloat16}[autocast_dtype.lower()]
         self._autocast_dtype = autocast_dtype
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
         if self._device.type == "cuda":
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cudnn.allow_tf32 = True
-        self.wrapper = load_model_package(LocalPackage(package_root), pretrained=True, device=device, multistep=False)
+        self.wrapper = load_model_package(LocalPackage(package_root), pretrained=True, device=str(self._device), multistep=False)
         self.wrapper.to(self._device)
         self.wrapper.eval()
         for p in self.wrapper.parameters():

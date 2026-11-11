@@ -37,7 +37,7 @@ def main():
     locs = [float(x) for x in args.locs.split(',')]
 
     path_model = os.path.join(args.path_model, '')
-    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'cuda'})
+    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'auto'})
     dev = model.device
     d = torch.load(args.samples, weights_only=False)
     meta = d['meta']

@@ -23,7 +23,7 @@ exp:
   graphcast_checkpoint: '/scratch4/BMC/gsienkf/Jeffrey.Whitaker/long-window-4dvar-jswhit2/models/graphcast_small.npz'
   graphcast_stats_dir: '/scratch4/BMC/gsienkf/Jeffrey.Whitaker/long-window-4dvar-jswhit2/stats'
   graphcast_input_dir: '/scratch4/BMC/gsienkf/Jeffrey.Whitaker/long-window-4dvar-jswhit2/input/2015-gc'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   print_every: 1
   oberrstart: -1.0

@@ -15,7 +15,7 @@ exp:
   exp_name: 'test_fcn3_5d_12h_100it'
 
   path_model: './backends/fcn3/fourcastnet3/'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   # reuse the original fcstnetv3 repo's already-warmed ERA5 cache -- avoids
   # needing internet from this (offline) H100 compute node for a smoke test

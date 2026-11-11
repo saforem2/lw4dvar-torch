@@ -125,7 +125,7 @@ exp:
   #   ic_cache: '/scratch4/BMC/gsienkf/Jeffrey.Whitaker/long-window-4dvar-fcstnetv3/ic_cache/'
   path_model: './backends/fcn3/fourcastnet3/'
 
-  device: 'cuda'
+  device: 'auto' # auto uses ezpz (TORCH_DEVICE can override)
   path_output: './output/' # where to write output named by subdirectory exp_name
   # ERA5 initial-condition/verification fetches (backends/{aifs,fcn3}/*_ic.py)
   # are cached here. The fetch itself needs internet (CDS) -- warm this

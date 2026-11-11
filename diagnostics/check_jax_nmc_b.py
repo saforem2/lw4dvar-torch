@@ -33,6 +33,7 @@ import torch
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import forecast_model
 
 POINTS = [(45.0, 190.0, 'N Pacific 45N 170W'), (40.0, 265.0, 'central US 40N 95W'),
           (-50.0, 90.0, 'S Indian Ocean 50S 90E'), (5.0, 190.0, 'tropical Pacific 5N 170W')]
@@ -146,7 +147,7 @@ def main():
                       f"max |dV| {spd[box].max():.2f} m/s; geostrophic corr {st[0]:.2f}, |V|/|Vg| {st[1]:.2f}, "
                       f"angle {st[2]:+.0f} deg", flush=True)
         del B
-        torch.cuda.empty_cache()
+        forecast_model.empty_device_cache(model.device)
 
     torch.save({'single': single, 'labels': labels, 'files': files, 'lat': lat, 'lon': lon, 'loc': args.loc,
                 'date': args.date, 'hours': args.hours, 'plev': float(plevs[k])}, args.out + '.pt')

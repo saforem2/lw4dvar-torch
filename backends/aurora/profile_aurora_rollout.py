@@ -22,6 +22,7 @@ import torch
 # -- needs the repo root on sys.path (aurora_ic/aurora_model themselves
 # resolve fine via sys.path[0], this script's own directory).
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import forecast_model
 
 import aurora_ic
 import aurora_model
@@ -31,7 +32,7 @@ torch.manual_seed(0)
 print("loading model...")
 model = aurora_model.AuroraModel(
     package_root="backends/aurora/hf_cache/models--microsoft--aurora/snapshots/a96afd7ee6d65e3bd2d476f3be798a25a56f2296/",
-    device="cuda",
+    device=None,
 )
 
 date0 = datetime.datetime(2014, 12, 30, 0, tzinfo=datetime.timezone.utc)
@@ -48,11 +49,11 @@ state = model.advance(input_encoded, steps=STEPS, latent_increment=increment, us
 loss = state.state.float().pow(2).sum()
 loss.backward()
 increment.grad = None
-torch.cuda.synchronize()
-torch.cuda.reset_peak_memory_stats()
+forecast_model.synchronize_device(model.device)
+forecast_model.reset_device_peak_memory_stats(model.device)
 
 with torch.profiler.profile(
-    activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA],
+    activities=[torch.profiler.ProfilerActivity.CPU, getattr(torch.profiler.ProfilerActivity, model.device.type.upper())],
     record_shapes=False,
 ) as prof:
     with torch.profiler.record_function("full_rollout_fwd"):
@@ -61,16 +62,16 @@ with torch.profiler.profile(
         loss = state.state.float().pow(2).sum()
     with torch.profiler.record_function("backward"):
         loss.backward()
-    torch.cuda.synchronize()
+    forecast_model.synchronize_device(model.device)
 
-peak_gib = torch.cuda.max_memory_allocated() / 2**30
+peak_gib = forecast_model.device_memory_allocated(model.device, peak=True) / 2**30
 print(f"\npeak memory during profiled region: {peak_gib:.2f} GiB\n")
 
 print("=== top 25 ops by CUDA time total ===")
-print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=25))
+print(prof.key_averages().table(sort_by="self_device_time_total", row_limit=25))
 
 print("\n=== top-level regions (self CUDA time) ===")
-print(prof.key_averages().table(sort_by="self_cuda_time_total", row_limit=15))
+print(prof.key_averages().table(sort_by="self_device_time_total", row_limit=15))
 
 # Group by a coarse category based on op name substrings, to answer
 # "attention vs conv (patch embed/reconstruction) vs matmul/linear vs

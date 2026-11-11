@@ -154,7 +154,7 @@ class FCN3Model(forecast_model.LatentForecastModel):
     def __init__(
         self,
         package_root: str,
-        device: str = "cuda",
+        device: str | torch.device | None = None,
         noise_seed: int = 333,
         atmo_chunk_size: int = 2,
     ):
@@ -197,7 +197,7 @@ class FCN3Model(forecast_model.LatentForecastModel):
             (see verify_chunked_atmo.py), not for real use.
         """
         self._atmo_chunk_size = atmo_chunk_size
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
         if self._device.type == "cuda":
             # Same rationale as AIFSModel.__init__: nothing in this pipeline
             # runs at full fp32 precision anyway once bf16/kernel-level
@@ -206,7 +206,7 @@ class FCN3Model(forecast_model.LatentForecastModel):
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cudnn.allow_tf32 = True
 
-        self.wrapper = load_model_package(LocalPackage(package_root), pretrained=True, device=device, multistep=False)
+        self.wrapper = load_model_package(LocalPackage(package_root), pretrained=True, device=str(self._device), multistep=False)
         # load_model_package's own model_registry.get_model(...).to(device) call
         # happens BEFORE ModelWrapper.__init__ registers its own in/out
         # bias+scale buffers, so those specific buffers are NOT guaranteed to

@@ -17,7 +17,7 @@ exp:
   model_name: 'aifs-single-mse-2.0.ckpt'
   path_model: './backends/aifs/aifs-single-2.0/'
   aifs_config: 'backends/aifs/aifs_inference.yaml'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   # reuse the original aifsv2 repo's already-warmed ERA5 cache -- avoids
   # needing internet from this (offline) H100 compute node for a smoke test

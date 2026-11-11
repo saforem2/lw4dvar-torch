@@ -49,12 +49,13 @@ class AIFS3Model(AIFSModel):
 
     ic_module = "aifs3_ic"  # IC/verification reader used by long_window_4dvar_utils
 
-    def __init__(self, checkpoint_path: str, config_path: str, device: str = "cuda",
+    def __init__(self, checkpoint_path: str, config_path: str, device: str | torch.device | None = None,
                  autocast_dtype: Optional[Union[str, torch.dtype]] = None,
                  compile_wrapper: bool = False):
         if compile_wrapper:
             raise NotImplementedError("compile_wrapper is not implemented for AIFS3Model")
-        if device == "cuda":
+        device = forecast_model.resolve_device(device)
+        if device.type == "cuda":
             # same reasoning as AIFSModel.__init__
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cudnn.allow_tf32 = True

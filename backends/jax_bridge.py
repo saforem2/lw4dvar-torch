@@ -42,8 +42,8 @@ def to_jax(x: torch.Tensor) -> jax.Array:
     x = x.detach()
     if not x.is_contiguous():
         x = x.contiguous()
-    if x.is_cuda:
-        torch.cuda.current_stream(x.device).synchronize()
+    if x.device.type in {"cuda", "xpu"}:
+        getattr(torch, x.device.type).current_stream(x.device).synchronize()
     # from_dlpack(copy=True) is UNIMPLEMENTED through the GPU PJRT C API, so
     # import zero-copy and copy on device; block so torch can't reuse the
     # source buffer before the copy has read it.

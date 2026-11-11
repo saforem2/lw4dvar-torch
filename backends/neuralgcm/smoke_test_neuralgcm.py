@@ -20,6 +20,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import forecast_model
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import neuralgcm_model  # noqa: E402
 
@@ -51,11 +52,11 @@ def main():
     with torch.no_grad():
         t = time.time()
         s = model.advance(state0, steps=1)
-        torch.cuda.synchronize()
+        forecast_model.synchronize_device(model.device)
         print(f"first step (incl. compile) {time.time() - t:.1f} s")
         t = time.time()
         s = model.advance(s, steps=hours - 1)
-        torch.cuda.synchronize()
+        forecast_model.synchronize_device(model.device)
         print(f"{hours - 1} more steps {(time.time() - t) / (hours - 1):.4f} s/step")
     z500_err(s, f"+{hours} h")
 
@@ -88,12 +89,12 @@ def main():
     inc = torch.zeros(model.latent_shape, device=model.device, requires_grad=True)
     t = time.time()
     loss_fn(inc).backward()
-    torch.cuda.synchronize()
+    forecast_model.synchronize_device(model.device)
     print(f"forward+backward {hours} steps (incl. compile) {time.time() - t:.1f} s")
     inc2 = torch.zeros(model.latent_shape, device=model.device, requires_grad=True)
     t = time.time()
     loss_fn(inc2).backward()
-    torch.cuda.synchronize()
+    forecast_model.synchronize_device(model.device)
     print(f"forward+backward {hours} steps {time.time() - t:.2f} s")
     g = inc.grad
     print(f"grad finite: {bool(torch.isfinite(g).all())}")

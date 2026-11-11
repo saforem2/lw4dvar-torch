@@ -90,7 +90,7 @@ class NeuralGCMState:
 
 
 class NeuralGCMModel(forecast_model.LatentForecastModel):
-    def __init__(self, checkpoint_path: str, input_dir: str, device: str = "cuda",
+    def __init__(self, checkpoint_path: str, input_dir: str, device: str | torch.device | None = None,
                  state_scales: "dict[str, float] | None" = None,
                  ngcm_train_path: "str | None" = None):
         import sys
@@ -107,7 +107,7 @@ class NeuralGCMModel(forecast_model.LatentForecastModel):
         jax_array._reconstruct_array = _reconstruct_array
         with open(checkpoint_path, "rb") as f:
             self.model = neuralgcm.PressureLevelModel.from_checkpoint(pickle.load(f))
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
         self._input_dir = input_dir
         self._timestep = datetime.timedelta(seconds=int(self.model.timestep / np.timedelta64(1, "s")))
         grid = self.model._structure.specs.aux_features["xarray_dataset"]

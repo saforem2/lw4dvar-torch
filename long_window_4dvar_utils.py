@@ -514,6 +514,8 @@ def _dry_mass_fixer_hpa(exp):
 
 
 def get_model(exp):
+    import forecast_model
+
     backend = exp['model_backend']
     if backend == 'aifs':
         _ensure_backend_on_path('aifs')
@@ -531,7 +533,7 @@ def get_model(exp):
         model = model_class(
             checkpoint_path=exp['path_model'] + exp['model_name'],
             config_path=exp.get('aifs_config', 'aifs_inference.yaml'),
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             autocast_dtype=_autocast_torch_dtype(exp, 'aifs'),
             compile_wrapper=exp.get('compile_wrapper', False),
             attention=exp.get('aifs_attention'),
@@ -543,7 +545,7 @@ def get_model(exp):
         import fcn3_model
         return fcn3_model.FCN3Model(
             package_root=exp['path_model'],
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             atmo_chunk_size=exp.get('atmo_chunk_size', 2),
         )
     elif backend == 'sfno':
@@ -554,7 +556,7 @@ def get_model(exp):
         import sfno_model
         return sfno_model.SFNOModel(
             package_root=exp.get('path_model', sfno_model.DEFAULT_PACKAGE),
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             latent_block=exp.get('sfno_latent_block', -2),
             autocast_dtype=_autocast_torch_dtype(exp, 'sfno'),
         )
@@ -563,7 +565,7 @@ def get_model(exp):
         import aurora_model
         return aurora_model.AuroraModel(
             package_root=exp['path_model'],
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             autocast_dtype=_autocast_torch_dtype(exp, 'aurora'),
             compile_wrapper=exp.get('compile_wrapper', False),
         )
@@ -573,7 +575,7 @@ def get_model(exp):
         return ace2_model.ACE2Model(
             checkpoint_path=exp['path_model'] + exp.get('model_name', 'ace2_era5_ckpt.tar'),
             forcing_dir=exp.get('forcing_dir', exp['path_model'] + 'forcing_data/'),
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
         )
     elif backend == 'ngcm':
         # JAX model (ngcm-train's NeuralGCM-style TL63 model) behind the
@@ -586,7 +588,7 @@ def get_model(exp):
             step=int(exp['ngcm_step']),
             data_dir=exp['ngcm_data'],
             ngcm_train_path=exp.get('ngcm_train_path', '/scratch4/BMC/gsienkf/whitaker/python/ngcm-train'),
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             use_ema=exp.get('ngcm_use_ema', True),
             state_scales=exp.get('ngcm_state_scales'),
         )
@@ -597,7 +599,7 @@ def get_model(exp):
         return neuralgcm_model.NeuralGCMModel(
             checkpoint_path=exp['neuralgcm_checkpoint'],
             input_dir=exp['neuralgcm_input_dir'],
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             state_scales=exp.get('neuralgcm_state_scales'),
             ngcm_train_path=exp.get('ngcm_train_path', '/scratch4/BMC/gsienkf/whitaker/python/ngcm-train'),
         )
@@ -609,7 +611,7 @@ def get_model(exp):
             checkpoint_path=exp['graphcast_checkpoint'],
             stats_dir=exp['graphcast_stats_dir'],
             input_dir=exp['graphcast_input_dir'],
-            device=exp.get('device', 'cuda'),
+            device=forecast_model.resolve_device(exp.get('device')),
             frozen=exp.get('graphcast_frozen'),
         )
     raise ValueError(f"unknown model_backend {backend!r} (expected 'aifs', 'fcn3', 'aurora', 'ace2', 'sfno', 'ngcm', 'neuralgcm', or 'graphcast')")

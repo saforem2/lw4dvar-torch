@@ -16,7 +16,7 @@ exp:
   model_name: 'aifs-single-mse-1.1.ckpt'
   path_model: './backends/aifs/aifs-single-1.1/'
   aifs_config: 'backends/aifs/aifs_inference_v1p1.yaml'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   ic_cache: './ic_cache_aifs1/'
   print_every: 1

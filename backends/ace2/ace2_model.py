@@ -118,7 +118,7 @@ class _ForcingSource:
     def __init__(self, forcing_dir: str, names: list[str], device: torch.device, max_cache: int = 512):
         self._dir = forcing_dir
         self._names = names
-        self._device = device
+        self._device = forecast_model.resolve_device(device)
         self._max_cache = max_cache
         self._datasets: dict[int, xr.Dataset] = {}
         self._cache: dict[np.datetime64, dict[str, torch.Tensor]] = {}
@@ -177,7 +177,7 @@ class ACE2Model(forecast_model.LatentForecastModel):
         self,
         checkpoint_path: str,
         forcing_dir: str,
-        device: str = "cuda",
+        device: str | torch.device | None = None,
         plevs: tuple = DEFAULT_PLEVS,
     ):
         """
@@ -198,7 +198,7 @@ class ACE2Model(forecast_model.LatentForecastModel):
         """
         from fme.core.device import get_device
 
-        self._device = torch.device(device)
+        self._device = forecast_model.resolve_device(device)
         if get_device().type != self._device.type:
             raise ValueError(f"device={device!r} but fme will place the model on {get_device()}")
         if self._device.type == "cuda":

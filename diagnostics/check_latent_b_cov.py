@@ -84,7 +84,7 @@ def main():
               f"participation ratio {pr:.1f}, cond {(e[0] / e[-1].clamp(min=1e-30)).item():.2e}")
 
     path_model = os.path.join(args.path_model, '')
-    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'cuda'})
+    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'auto'})
     dev = model.device
     Bc, Bd = Bc.to(dev), Bd.to(dev)
     psht = th.RealSHT(H, W, grid=meta['sht_grid'], norm='ortho').to(dev).double()

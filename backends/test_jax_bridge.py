@@ -20,7 +20,8 @@ import torch  # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backends import jax_bridge  # noqa: E402
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+import forecast_model  # noqa: E402
+DEVICE = forecast_model.resolve_device()
 N, STEPS = 6, 4
 
 
@@ -79,7 +80,7 @@ def main():
 
     # 5. JAX -> torch is zero-copy (torch -> JAX copies, see jax_bridge).
     y = jax.numpy.ones(N, jax.numpy.float64)
-    if DEVICE.type == "cuda":
+    if DEVICE.type in {"cuda", "xpu"}:
         same = jax_bridge.to_torch(y).data_ptr() == y.unsafe_buffer_pointer()
         print(f"jax -> torch zero-copy on GPU: {same}")
     print("all checks passed")

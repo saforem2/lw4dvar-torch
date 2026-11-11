@@ -28,11 +28,13 @@ import torch
 import xarray as xr
 
 sys.path.insert(0, ".")
+import forecast_model
 sys.path.insert(0, "backends/ace2")
 from ace2_model import ACE2Model  # noqa: E402
+import forecast_model  # noqa: E402
 
 SNAP = "backends/ace2/ACE2-ERA5"
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = forecast_model.resolve_device()
 N_STEPS = 4
 
 torch.manual_seed(0)
@@ -123,15 +125,15 @@ print("[3] AdamW losses: " + " ".join(f"{v:.4f}" for v in losses))
 assert min(losses[1:]) < losses[0]
 
 # (4) timing / memory
-if DEVICE == "cuda":
+if DEVICE.type in {"cuda", "xpu"}:
     for steps in (4, 20):
-        torch.cuda.synchronize()
-        torch.cuda.reset_peak_memory_stats()
+        forecast_model.synchronize_device(DEVICE)
+        forecast_model.reset_device_peak_memory_stats(DEVICE)
         inc = torch.zeros(model.latent_shape, device=model.device, requires_grad=True)
         t0 = time.time()
         out = model.advance(state0, steps=steps, use_checkpoint=True, latent_increment=inc)
         out.state[0, ps_col].mean().backward()
-        torch.cuda.synchronize()
-        print(f"[4] steps={steps}: fwd+bwd {time.time() - t0:.2f}s peak {torch.cuda.max_memory_allocated() / 2**30:.2f} GiB")
+        forecast_model.synchronize_device(DEVICE)
+        print(f"[4] steps={steps}: fwd+bwd {time.time() - t0:.2f}s peak {forecast_model.device_memory_allocated(DEVICE, peak=True) / 2**30:.2f} GiB")
 
 print("ALL CHECKS PASSED")

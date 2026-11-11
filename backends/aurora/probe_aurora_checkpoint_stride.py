@@ -30,6 +30,7 @@ import torch
 # -- needs the repo root on sys.path (aurora_ic/aurora_model themselves
 # resolve fine via sys.path[0], this script's own directory).
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import forecast_model
 
 import aurora_ic
 import aurora_model
@@ -46,12 +47,12 @@ parser.add_argument("--compile", action="store_true")
 args = parser.parse_args()
 
 print(f"loading model (compile={args.compile})...", file=sys.stderr)
-model = aurora_model.AuroraModel(PACKAGE_ROOT, device="cuda", compile_wrapper=args.compile)
+model = aurora_model.AuroraModel(PACKAGE_ROOT, device=None, compile_wrapper=args.compile)
 
 input_state = aurora_ic.build_input_state(DATE0, "ic_cache/")
 input_encoded = model.prepare_initial_state(input_state, DATE0)
 
-torch.cuda.reset_peak_memory_stats()
+forecast_model.reset_device_peak_memory_stats(model.device)
 increment = torch.zeros(model.latent_shape, device=model.device, requires_grad=True)
 
 t0 = time.time()
@@ -65,9 +66,9 @@ try:
         state = model.advance(state, steps=1, use_checkpoint=use_ckpt, latent_increment=inj)
     loss = state.state.float().pow(2).mean()
     loss.backward()
-    torch.cuda.synchronize()
+    forecast_model.synchronize_device(model.device)
     dt = time.time() - t0
-    peak_gib = torch.cuda.max_memory_allocated() / 2**30
+    peak_gib = forecast_model.device_memory_allocated(model.device, peak=True) / 2**30
     print(
         f"RESULT steps={args.steps} checkpoint_stride={args.checkpoint_stride} "
         f"compile={args.compile} ({n_checkpointed}/{args.steps} steps checkpointed): "

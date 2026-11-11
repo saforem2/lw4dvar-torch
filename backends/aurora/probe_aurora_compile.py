@@ -39,6 +39,7 @@ import torch
 # -- needs the repo root on sys.path (aurora_ic/aurora_model themselves
 # resolve fine via sys.path[0], this script's own directory).
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import forecast_model
 
 import aurora_ic
 import aurora_model
@@ -56,15 +57,15 @@ def timed_calls(model, steps, use_checkpoint, n_calls, label):
     times = []
     for i in range(n_calls):
         increment = torch.zeros(model.latent_shape, device=model.device, requires_grad=True)
-        torch.cuda.synchronize()
+        forecast_model.synchronize_device(model.device)
         t0 = time.time()
         out = model.advance(input_encoded, steps=steps, use_checkpoint=use_checkpoint, latent_increment=increment)
         loss = out.state.float().pow(2).mean()
         loss.backward()
-        torch.cuda.synchronize()
+        forecast_model.synchronize_device(model.device)
         dt = time.time() - t0
         times.append(dt)
-        peak_gib = torch.cuda.max_memory_allocated() / 2**30
+        peak_gib = forecast_model.device_memory_allocated(model.device, peak=True) / 2**30
         print(f"  [{label}] call {i+1}/{n_calls}: {dt:.2f}s peak={peak_gib:.2f}GiB "
               f"grad_norm={increment.grad.norm().item():.4g}", flush=True)
     return times
@@ -72,7 +73,7 @@ def timed_calls(model, steps, use_checkpoint, n_calls, label):
 
 print("=== Stage 0: baseline (uncompiled), steps=1, no outer checkpoint ===", flush=True)
 print("loading model...", flush=True)
-model = aurora_model.AuroraModel(PACKAGE_ROOT, device="cuda")
+model = aurora_model.AuroraModel(PACKAGE_ROOT, device=None)
 try:
     t0 = timed_calls(model, steps=1, use_checkpoint=False, n_calls=3, label="stage0")
     print(f"stage0 steady-state (calls 2-3 mean): {sum(t0[1:]) / len(t0[1:]):.2f}s", flush=True)

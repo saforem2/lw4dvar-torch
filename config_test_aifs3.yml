@@ -18,7 +18,7 @@ exp:
   model_name: 'inference-last.ckpt'
   path_model: '/scratch4/BMC/gsienkf/Sergey.Frolov/eagle/latent/EAGLE/run/aifs2-1deg-ic1/training/outputs/checkpoint/8a8641f4213949afb3c68365ea7d1e63/'
   aifs_config: 'backends/aifs/aifs_inference_aifs2-1deg-ic1.yaml'
-  device: 'cuda'
+  device: 'auto'
   path_output: './output/'
   # O96 ERA5 cache warmed for the aifs2-1.0deg-v1.0 checkpoint (same grid and
   # input variables -- checked by backends/aifs/probe_aifs3_validate.py)

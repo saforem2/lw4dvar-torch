@@ -104,7 +104,7 @@ def main():
     args = ap.parse_args()
 
     path_model = os.path.join(args.path_model, '')
-    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'cuda'})
+    model = utils.get_model({'model_backend': 'ace2', 'path_model': path_model, 'device': 'auto'})
     hgt_ace2 = ace2_ic.load_hgtsfc(path_model + 'forcing_data')
     probe = LatentProbe(model)
     sfno = model._sfno

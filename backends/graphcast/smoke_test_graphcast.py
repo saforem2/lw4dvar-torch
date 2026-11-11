@@ -21,6 +21,7 @@ import torch
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO)
+import forecast_model
 sys.path.insert(0, os.path.join(REPO, 'backends', 'graphcast'))
 import graphcast_model  # noqa: E402
 
@@ -31,8 +32,8 @@ INPUT = f'{BASE}/input/2015-gc'
 REF = '/scratch4/BMC/gsienkf/Jeffrey.Whitaker/lw4dvar-jax/backends/graphcast/graphcast_model.py'
 
 date = datetime.datetime.fromisoformat(sys.argv[1] if len(sys.argv) > 1 else '2015-01-02T00')
-model = graphcast_model.GraphCastModel(CKPT, STATS, INPUT, device='cuda')
-w = torch.as_tensor(model.area_weights, dtype=torch.float32, device='cuda')
+model = graphcast_model.GraphCastModel(CKPT, STATS, INPUT, device=None)
+w = torch.as_tensor(model.area_weights, dtype=torch.float32, device=None)
 w = w / w.sum()
 s0 = model.prepare_initial_state(model.read_inputs(date), date)
 print(f'state {tuple(s0.state.shape)}, latent {model.latent_shape}, frozen {model._frozen}', flush=True)
@@ -80,22 +81,22 @@ def cost(latent):
     return ((w * (model.decode_state(s)['z500'] - truth24) ** 2).sum() / 9.80665 ** 2)
 
 
-lat = torch.as_tensor(model.lats, device='cuda').reshape(model.latent_shape[1:])
-lon = torch.as_tensor(model.lons, device='cuda').reshape(model.latent_shape[1:])
+lat = torch.as_tensor(model.lats, device=None).reshape(model.latent_shape[1:])
+lon = torch.as_tensor(model.lons, device=None).reshape(model.latent_shape[1:])
 bump = (torch.exp(-((lat - 45) / 15) ** 2) * torch.cos(torch.deg2rad(lon - 180)).clamp(min=0) ** 2).float()
-latent = torch.zeros(model.latent_shape, device='cuda', requires_grad=True)
+latent = torch.zeros(model.latent_shape, device=None, requires_grad=True)
 t0 = time.time()
 J = cost(latent)
 J.backward()
 print(f'cost {J.item():.4f}, first fwd+bwd {time.time() - t0:.1f} s', flush=True)
 g = latent.grad
 with torch.no_grad():
-    z0 = torch.zeros(model.latent_shape, device='cuda')
+    z0 = torch.zeros(model.latent_shape, device=None)
     rep = [cost(z0).item() for _ in range(4)]
 print(f'  repeat cost spread (GPU nondeterminism): {max(rep) - min(rep):.2e}', flush=True)
 for fam in ('t', 'z', 'u', 'msl'):
     for amp in (0.003, 0.01, 0.03, 0.1, 0.3):
-        d = torch.zeros(model.latent_shape, device='cuda')
+        d = torch.zeros(model.latent_shape, device=None)
         d[model.resolve_columns(fam)] = bump
         d = d * amp
         with torch.no_grad():
@@ -107,14 +108,14 @@ for fam in ('t', 'z', 'u', 'msl'):
 
 # 4. timing (16 steps = 4-day window)
 for label in ('forward', 'forward+backward'):
-    torch.cuda.synchronize()
+    forecast_model.synchronize_device(model.device)
     t0 = time.time()
-    latent = torch.zeros(model.latent_shape, device='cuda', requires_grad=label != 'forward')
+    latent = torch.zeros(model.latent_shape, device=None, requires_grad=label != 'forward')
     with torch.set_grad_enabled(label != 'forward'):
         s = model.advance(s0, 16, latent_increment=latent)
         J = (w * model.decode_state(s)['z500']).sum()
         if label != 'forward':
             J.backward()
-    torch.cuda.synchronize()
-    print(f'{label} 16 steps: {time.time() - t0:.1f} s; peak torch mem {torch.cuda.max_memory_allocated() / 2 ** 30:.1f} GB',
+    forecast_model.synchronize_device(model.device)
+    print(f'{label} 16 steps: {time.time() - t0:.1f} s; peak torch mem {forecast_model.device_memory_allocated(model.device, peak=True) / 2 ** 30:.1f} GB',
           flush=True)
