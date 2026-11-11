@@ -55,13 +55,17 @@ def resolve_device(device: str | torch.device | None = None) -> torch.device:
         if get_torch_device is not None:
             return torch.device(get_torch_device(as_torch_device=True))
     except ImportError:
-        if hasattr(torch, "xpu") and torch.xpu.is_available():
-            return torch.device("xpu")
-        if torch.cuda.is_available():
-            return torch.device("cuda")
-        if torch.backends.mps.is_available():
-            return torch.device("mps")
-        return torch.device("cpu")
+        pass
+
+    # Keep this fallback outside the import exception: older ezpz versions
+    # can import successfully without exposing get_torch_device.
+    if hasattr(torch, "xpu") and torch.xpu.is_available():
+        return torch.device("xpu")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
 
 
 def _device_runtime(device: str | torch.device):
