@@ -21,5 +21,12 @@ source "${EZPZ_UTILS_FILE}"
 ezpz_setup_job
 ezpz_load_modules
 
-# This prebuilt conda prefix contains the CUDA PyTorch used by the smoke.
-module load conda/2025-09-25
+# The environment has CUDA PyTorch site-packages but no Python executable on
+# its PATH. Use Polaris's Python 3.12 runtime with that package directory.
+LW4DVAR_CONDA_PREFIX=/lus/eagle/projects/AuroraGPT/foremans/conda/envs/2025-09
+LW4DVAR_PYTHON=/opt/cray/pe/python/3.12.12/bin/python3.12
+LW4DVAR_SITE_PACKAGES="${LW4DVAR_CONDA_PREFIX}/lib/python3.12/site-packages"
+[[ -x "${LW4DVAR_PYTHON}" ]]
+[[ -d "${LW4DVAR_SITE_PACKAGES}" ]]
+export LW4DVAR_PYTHON LW4DVAR_SITE_PACKAGES
+export PYTHONPATH="${LW4DVAR_SITE_PACKAGES}:${PYTHONPATH:-}"
