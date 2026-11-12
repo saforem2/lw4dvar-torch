@@ -31,14 +31,15 @@ The test downloads a 22 MB fixture checkpoint when needed, runs one 24-hour
 window for 50 epochs, checks that the cost decreases, and verifies the
 analysis and forecast files. It is a mini fixture, not the full ACE2 workload.
 
-## Full ACE2 checkpoint on Sunspot XPU
+## Full ACE2 checkpoint and sample inputs
 
-The released 1° ACE2 checkpoint, its 2020 initial condition, and matching
-forcing were exercised on a Sunspot XPU compute node. The two 2020 inputs are
-public LFS files from `allenai/ACE2-ERA5`; their SHA-256 values are recorded in
-[`ALCF_STATUS.md`](ALCF_STATUS.md). A fresh clone needs the submodule and
-these three files. The commands below download each file to a temporary name,
-check its SHA-256, then install it at the expected path:
+These asset-fetch commands work on any Linux system with Git LFS, `curl`, and
+`sha256sum`. The released 1° ACE2 checkpoint, 2020 initial condition, and
+matching forcing were exercised on a Sunspot XPU compute node; the two 2020
+inputs are public LFS files from `allenai/ACE2-ERA5`. Their SHA-256 values are
+recorded in [`ALCF_STATUS.md`](ALCF_STATUS.md). A fresh clone needs the
+submodule and these three files. The commands below download each file to a
+temporary name, verify its SHA-256, then install it at the expected path.
 
 ```bash
 git submodule update --init backends/ace2/ACE2-ERA5
@@ -58,8 +59,11 @@ mv forcing_data/forcing_2020.nc.part forcing_data/forcing_2020.nc
 cd ../../..
 ```
 
-With those files present, submit the full-checkpoint forecast/gradient smoke
-from a Sunspot login node:
+### Sunspot XPU forecast/gradient smoke
+
+With those files present, submit the full-checkpoint smoke from a Sunspot login
+node. The following queue, account, filesystem, and `ezpz submit` options are
+Sunspot-specific; only the asset-fetch commands above are portable as written.
 
 ```bash
 uvx --from git+https://github.com/saforem2/ezpz ezpz submit \

@@ -15,6 +15,9 @@ For the shortest ALCF setup and the bundled mini-ACE2 4D-Var run, see
 [ALCF quick start](ALCF_QUICKSTART.md). It uses `ezpz_setup_env`, `uv`, and
 `ezpz launch`; the mini test selects the detected accelerator when requested.
 Current hardware validation is recorded in [ALCF status](ALCF_STATUS.md).
+For Linux NVIDIA systems outside ALCF, see the
+[non-ALCF CUDA quick start](CUDA_QUICKSTART.md). That environment recipe is not
+yet validated on generic CUDA hardware.
 
 The model checkpoints are git submodules pointing at their Hugging Face
 repositories, stored with git-lfs (`git-lfs` must be installed). The ACE2-ERA5
