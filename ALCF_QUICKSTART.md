@@ -60,6 +60,23 @@ ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- \
   python3 -u long_window_4dvar.py path/to/ace2_config.yml
 ```
 
-The historical 240-cycle config refers to another project's observation
-archive. That data must be staged somewhere this account can read before the
-full-model pilot can run.
+On Sunspot, the public ISPD v4.7 observations are staged at
+`/tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/`. The raw files are
+hourly HDF5; the solver-format conversion is reproducible with:
+
+```bash
+uv run --no-project --with h5py python test_scripts/convert_ispd_hdf5.py \
+  --download-missing \
+  --input /tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/raw \
+  --output /tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/psobs
+```
+
+This fetches any missing source files directly from NCAR GDEX and writes the
+solver-format files in the same command.
+
+Use the converted `psobs` directory as `obspath`. This source has 9,968
+observations at `2015-01-15T00`, versus 10,821 in the historical archive, so
+results are not an exact reproduction. The original Polaris path is
+`/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; it is not readable
+by this account. See [`ALCF_STATUS.md`](ALCF_STATUS.md) for the current cache
+and Sunspot ACE2 device limitations.

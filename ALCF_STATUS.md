@@ -71,4 +71,21 @@ Logs remain on their respective systems:
 
 ## Full-model pilot
 
-The historical 240-cycle configuration depends on a 2015 surface-pressure observation archive under another project's storage. A fresh Sunspot check found `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs` unreadable, so the data must be staged at a readable location before the full run. The Polaris mini-case submission also needs a queue slot; the last attempt was rejected at the per-user queued-job limit.
+The old Polaris config points to `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; that path returns `Permission denied` for this account. The generic config points to `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs`, which is not readable from Sunspot.
+
+A fresh public source is now staged on Sunspot under
+`/tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/`. It contains 260
+six-hourly ISPD v4.7 HDF5 files for `2015-01-01T00` through
+`2015-03-06T18` (948,348,457 bytes), plus 260 solver-format files in `psobs/`
+with 2,644,377 type-181 surface-pressure observations. Conversion keeps finite
+pressures from 0 to 2000 hPa and uses 1 hPa observation error, matching the
+existing `psobs1` input convention. The Jan 15 00Z file has 9,968 observations;
+the historical file had 10,821, so this public-source run is not an exact
+reproduction of the old archive. The source dataset is [NCAR GDEX ISPD v4.7](https://gdex.ucar.edu/datasets/d132002/), DOI `10.5065/9EYR-TY90`.
+
+The public ACE2 checkpoint and 2014/2015 forcing files are also present in the
+Sunspot submodule and match their LFS SHA-256 pointers. The full run is not
+ready yet: the ACE2 initial-condition and verification cache (`ic_cache_ace2`)
+is absent. ACE2 also still cannot use Sunspot XPU through the installed FME
+device selector; the validated Sunspot ACE2 path is CPU, while XPU coverage is
+the separate forward/backward smoke.
