@@ -95,6 +95,8 @@ The public ACE2 checkpoint and 2014/2015 forcing files are present in the
 Sunspot submodule and match their LFS SHA-256 pointers. For the full-checkpoint
 XPU smoke, the matching 2020 inputs were downloaded from the public
 `allenai/ACE2-ERA5` model repository and verified against its LFS pointers:
+`ace2_era5_ckpt.tar` is 1,823,641,450 bytes with SHA-256
+`0e2522df5a8db087f18bcebea6e88277cea7c3b71892b868c427aca27673edc2`,
 `initial_conditions/ic_2020.nc` is 118,449,852 bytes with SHA-256
 `43cbb3a32c5cff89c1576ec0555e580a483ae3cdeb72f27eb38f81425bddbd8d`, and
 `forcing_data/forcing_2020.nc` is 548,881,284 bytes with SHA-256

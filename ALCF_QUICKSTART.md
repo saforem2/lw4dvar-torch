@@ -36,8 +36,30 @@ analysis and forecast files. It is a mini fixture, not the full ACE2 workload.
 The released 1° ACE2 checkpoint, its 2020 initial condition, and matching
 forcing were exercised on a Sunspot XPU compute node. The two 2020 inputs are
 public LFS files from `allenai/ACE2-ERA5`; their SHA-256 values are recorded in
-[`ALCF_STATUS.md`](ALCF_STATUS.md). With those files present, submit the full
-checkpoint forecast/gradient smoke from a Sunspot login node:
+[`ALCF_STATUS.md`](ALCF_STATUS.md). A fresh clone needs the submodule and
+these three files. The commands below download each file to a temporary name,
+check its SHA-256, then install it at the expected path:
+
+```bash
+git submodule update --init backends/ace2/ACE2-ERA5
+cd backends/ace2/ACE2-ERA5
+curl -fL https://huggingface.co/allenai/ACE2-ERA5/resolve/main/ace2_era5_ckpt.tar \
+  -o ace2_era5_ckpt.tar.part
+echo '0e2522df5a8db087f18bcebea6e88277cea7c3b71892b868c427aca27673edc2  ace2_era5_ckpt.tar.part' | sha256sum -c -
+mv ace2_era5_ckpt.tar.part ace2_era5_ckpt.tar
+curl -fL https://huggingface.co/allenai/ACE2-ERA5/resolve/main/initial_conditions/ic_2020.nc \
+  -o initial_conditions/ic_2020.nc.part
+echo '43cbb3a32c5cff89c1576ec0555e580a483ae3cdeb72f27eb38f81425bddbd8d  initial_conditions/ic_2020.nc.part' | sha256sum -c -
+mv initial_conditions/ic_2020.nc.part initial_conditions/ic_2020.nc
+curl -fL https://huggingface.co/allenai/ACE2-ERA5/resolve/main/forcing_data/forcing_2020.nc \
+  -o forcing_data/forcing_2020.nc.part
+echo 'ed168a35c9e675fee073578f687c6a85bdd158f10dc7b641afa24f9e5eeee2ae  forcing_data/forcing_2020.nc.part' | sha256sum -c -
+mv forcing_data/forcing_2020.nc.part forcing_data/forcing_2020.nc
+cd ../../..
+```
+
+With those files present, submit the full-checkpoint forecast/gradient smoke
+from a Sunspot login node:
 
 ```bash
 uvx --from git+https://github.com/saforem2/ezpz ezpz submit \
