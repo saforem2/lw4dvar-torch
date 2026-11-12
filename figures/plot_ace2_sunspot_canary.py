@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""Plot Sunspot ACE2 2-cycle canary metrics from the checked-in CSV data."""
+"""Plot Sunspot ACE2 canary metrics from its original output files and log."""
 
 from __future__ import annotations
 
-import csv
+import argparse
 from collections import defaultdict
 from pathlib import Path
+import re
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
 ROOT = Path(__file__).resolve().parent
-DATA = ROOT / "data"
 OUT_PNG = ROOT / "ace2_sunspot_2cycle_10it.png"
 OUT_SVG = ROOT / "ace2_sunspot_2cycle_10it.svg"
+RUN_DIR = Path("output/test_ace2_2cycle_10it_sunspot")
+JOB_LOG = Path("lw4dvar-ace2-2x10-serial.o12483476")
 
 mpl.rcParams.update(
     {
@@ -40,17 +42,52 @@ COLORS = {"2015-01-01T00": "#0072B2", "2015-01-01T06": "#D55E00"}
 LABELS = {"2015-01-01T00": "Cycle 1 (00Z)", "2015-01-01T06": "Cycle 2 (06Z)"}
 
 
-def read_csv(path: Path) -> list[dict[str, str]]:
-    with path.open(newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=RUN_DIR, help="Sunspot experiment output directory")
+    parser.add_argument("--job-log", type=Path, default=JOB_LOG, help="PBS stdout log containing Z500 scores")
+    return parser.parse_args()
+
+
+def load_loss_traces(output_dir: Path) -> dict[str, list[float]]:
+    traces = {}
+    for cycle in ("2015-01-01T00", "2015-01-01T06"):
+        path = output_dir / f"{cycle}_loss_120h_10it.txt"
+        traces[cycle] = [float(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        if len(traces[cycle]) != 10:
+            raise ValueError(f"Expected 10 loss values in {path}, found {len(traces[cycle])}")
+    return traces
+
+
+def load_z500_scores(job_log: Path) -> list[dict[str, float | str]]:
+    pattern = re.compile(
+        r"z500err (before|after) (\S+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)"
+    )
+    scores: dict[str, dict[str, float]] = defaultdict(dict)
+    for line in job_log.read_text(encoding="utf-8").splitlines():
+        match = pattern.search(line)
+        if match:
+            phase, valid_time = match.group(1, 2)
+            scores[valid_time][phase] = float(match.group(6))
+    rows = []
+    for valid_time in ("2015-01-01T06", "2015-01-01T12"):
+        values = scores.get(valid_time, {})
+        if not {"before", "after"}.issubset(values):
+            raise ValueError(f"Missing before/after Z500 score for {valid_time} in {job_log}")
+        rows.append(
+            {
+                "valid_time": valid_time,
+                "control_rmse_m": values["before"],
+                "analysis_rmse_m": values["after"],
+            }
+        )
+    return rows
 
 
 def make_figure() -> None:
-    loss_rows = read_csv(DATA / "ace2_sunspot_2cycle_10it_loss.csv")
-    z500_rows = read_csv(DATA / "ace2_sunspot_2cycle_10it_z500.csv")
-    losses: dict[str, list[tuple[int, float]]] = defaultdict(list)
-    for row in loss_rows:
-        losses[row["cycle_start"]].append((int(row["epoch"]), float(row["loss"])))
+    args = parse_args()
+    losses = load_loss_traces(args.output_dir)
+    z500_rows = load_z500_scores(args.job_log)
 
     fig, (ax_loss, ax_rmse) = plt.subplots(
         1, 2, figsize=(10.2, 4.0), gridspec_kw={"width_ratios": [1.45, 1.0]}
@@ -66,8 +103,8 @@ def make_figure() -> None:
     )
 
     for cycle in ("2015-01-01T00", "2015-01-01T06"):
-        points = sorted(losses[cycle])
-        epochs, values = zip(*points)
+        values = losses[cycle]
+        epochs = range(1, len(values) + 1)
         pct = 100 * (values[-1] / values[0] - 1)
         ax_loss.plot(
             epochs,
@@ -127,6 +164,8 @@ def make_figure() -> None:
     plt.close(fig)
     print(f"Wrote {OUT_PNG}")
     print(f"Wrote {OUT_SVG}")
+    print(f"Read losses from {args.output_dir}")
+    print(f"Read Z500 scores from {args.job_log}")
 
 
 if __name__ == "__main__":
