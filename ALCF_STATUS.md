@@ -44,8 +44,9 @@ Other model configs still point at external checkpoints and caches, so additiona
 ACE2 checkpoint, 120-hour window, real surface-pressure observations, and
 six-hour cycling as the full run, but runs two cycles for 10 optimizer epochs
 each. Sunspot PBS job `12483476` completed on `x1922c5s3b0n0` with
-`Exit_status = 0` in 3:50. It wrote 20 NetCDF/Pickle/diagnostic artifacts
-(about 1.3 GB) under
+`Exit_status = 0` in 3:50. Its stdout log,
+`lw4dvar-ace2-2x10-serial.o12483476`, ends with `...JOB COMPLETED...`. It
+wrote 20 NetCDF/Pickle/diagnostic artifacts (about 1.3 GB) under
 `output/test_ace2_2cycle_10it_sunspot/`.
 
 At +6 hours the global Z500 RMS error changed from `10.20 m` to `10.16 m`; at
@@ -53,6 +54,17 @@ At +6 hours the global Z500 RMS error changed from `10.20 m` to `10.16 m`; at
 `525647.8` to `518862.4` for cycle 1 and from `517137.2` to `493581.7` for
 cycle 2. These 10-epoch cycles are a quick hardware and pipeline check, not a
 converged substitute for the 50-epoch full experiment.
+
+![ACE2 Sunspot canary loss traces and Z500 error changes](figures/ace2_sunspot_2cycle_10it.png)
+
+Figure source: [`plot_ace2_sunspot_canary.py`](figures/plot_ace2_sunspot_canary.py)
+and [loss data](figures/data/ace2_sunspot_2cycle_10it_loss.csv) /
+[Z500 data](figures/data/ace2_sunspot_2cycle_10it_z500.csv) /
+[SVG](figures/ace2_sunspot_2cycle_10it.svg). The CSV values
+come from the job's `*_loss_120h_10it.txt` files and stdout log. Rebuild with
+`uv run --no-project --with matplotlib python figures/plot_ace2_sunspot_canary.py`.
+The run config is [`config_ace2_2cycle_10it.yml`](config_ace2_2cycle_10it.yml);
+its SHA-256 is `3355e009785267def6dc3cb77d014c725d2919015a6f6c15a037b91735f22c40`.
 
 ## Run evidence
 
