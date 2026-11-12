@@ -1,6 +1,6 @@
 # CPU-only environment for `make check` (CI and local). Versions follow the
 # backend envs' *-requirements.txt; torch is the CPU build of the same release.
-#   python -m venv .venv-ci && .venv-ci/bin/pip install -r requirements-ci.txt
+#   uv venv .venv-ci && uv pip install --python .venv-ci/bin/python -r requirements-ci.txt
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.7.1+cpu
 numpy==2.5.3

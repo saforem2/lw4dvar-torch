@@ -66,9 +66,10 @@ def checkpoint():
 def _config(tmp_path, ckpt):
     with open(os.path.join(DATA, 'manifest.json')) as f:
         m = json.load(f)
+    device = os.environ.get('LW4DVAR_DEVICE', 'cpu')
     exp = {
         'model_backend': 'ace2',
-        'device': 'cpu',
+        'device': device,
         'path_model': os.path.dirname(ckpt) + '/',
         'model_name': os.path.basename(ckpt),
         'forcing_dir': os.path.join(DATA, 'forcing_data') + '/',
@@ -105,7 +106,12 @@ def _config(tmp_path, ckpt):
 
 def test_ace2_mini_window(tmp_path, checkpoint):
     cfg, exp = _config(tmp_path, checkpoint)
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES='')
+    device = exp['device']
+    env = dict(os.environ)
+    if device == 'cpu':
+        env['CUDA_VISIBLE_DEVICES'] = ''
+    else:
+        env.pop('CUDA_VISIBLE_DEVICES', None)
     run = subprocess.run([sys.executable, '-u', 'long_window_4dvar.py', str(cfg)], cwd=REPO_ROOT, env=env,
                          capture_output=True, text=True, timeout=1200)
     log = run.stdout + run.stderr

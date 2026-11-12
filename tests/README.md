@@ -5,7 +5,7 @@ and CI (`.github/workflows/check.yml`) runs the same target on every pull
 request and push to `main`. Don't skip or loosen a test to get it green.
 
 ```
-python -m venv .venv-ci && .venv-ci/bin/pip install -r requirements-ci.txt
+uv venv .venv-ci && uv pip install --python .venv-ci/bin/python -r requirements-ci.txt
 make check PYTHON=.venv-ci/bin/python
 ```
 
@@ -34,7 +34,7 @@ network access, in a few seconds. `make check` runs:
   ps obs, 50 epochs through `long_window_4dvar.py`. Checks that it runs,
   writes its outputs, and that the cost falls by at least 40% (observed 59%);
   not analysis quality (the model is far too small). About a minute of
-  compute. Needs fme: `pip install -r requirements-ci-ace2.txt`.
+  compute. Needs fme: `uv pip install -r requirements-ci-ace2.txt`.
 
 ## Fixtures
 

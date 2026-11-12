@@ -1,0 +1,11 @@
+# Install into the environment created/selected by ezpz_setup_env.
+# Intentionally leaves torch unpinned so the ALCF machine's CUDA/XPU build
+# remains active. `uv pip install` resolves these against that torch.
+fme==2026.5.1
+torch-harmonics==0.8.0
+numpy==2.5.3
+scipy==1.18.1
+xarray==2026.7.0
+netCDF4==1.7.4
+PyYAML==6.0.3
+pytest

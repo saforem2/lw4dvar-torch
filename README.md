@@ -11,6 +11,10 @@ Currently only surface pressure observations are assimilated.
 
 ## Getting the code
 
+For the shortest ALCF setup and the bundled mini-ACE2 4D-Var run, see
+[ALCF quick start](ALCF_QUICKSTART.md). It uses `ezpz_setup_env`, `uv`, and
+`ezpz launch`; the mini test selects the detected accelerator when requested.
+
 The model checkpoints are git submodules pointing at their Hugging Face
 repositories, stored with git-lfs (`git-lfs` must be installed). The ACE2-ERA5
 repository also holds ~75 GB of yearly forcing files and training data, most
