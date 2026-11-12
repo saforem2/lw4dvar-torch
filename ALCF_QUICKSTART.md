@@ -41,8 +41,8 @@ ACE2 solver, and XPU smoke as one one-node job:
 uvx --from git+https://github.com/saforem2/ezpz ezpz submit --remote sunspot --no-launch \
   --env-setup-script /tegu/datascience/foremans/lw4dvar-torch/test_scripts/alcf_env_setup.sh \
   -N 1 -q backfill --time 02:00:00 -A datascience --filesystems tegu:home \
-  --workdir /tegu/datascience/foremans/lw4dvar-torch --job-name lw4dvar-checks \
-  -- bash test_scripts/run_sunspot_validation.sh
+  --workdir /tegu/datascience/foremans --job-name lw4dvar-checks \
+  -- bash /tegu/datascience/foremans/lw4dvar-torch/test_scripts/run_sunspot_validation.sh
 ```
 
 The setup script uses `ezpz_setup_env`; the test script installs dependencies

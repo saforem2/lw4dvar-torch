@@ -1,6 +1,10 @@
 #!/bin/bash
 set -eo pipefail
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+cd "$REPO_ROOT"
+
 # Install project dependencies without replacing the site-provided PyTorch.
 uv pip install --no-cache --link-mode=copy --no-deps -r requirements-alcf-ace2.txt
 uv pip install --no-cache --link-mode=copy ruff pytest
