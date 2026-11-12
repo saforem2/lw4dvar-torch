@@ -1,6 +1,8 @@
 # ALCF quick start
 
-Use the same setup on Sunspot, Polaris, Sirius, and Aurora:
+After [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merges, use the
+same setup on Sunspot, Polaris, Sirius, and Aurora. Sirius currently needs that
+fix to select its CUDA 13 site stack.
 
 ```bash
 git clone --branch feature/ezpz-device-agnostic --single-branch \
