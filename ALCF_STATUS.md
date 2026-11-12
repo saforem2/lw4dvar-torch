@@ -30,15 +30,15 @@ These are hardware smoke and mini-fixture results. The full-sized 240-cycle ACE2
 
 ## Tests and model coverage
 
-- `make check`: Ruff passed; `102 passed` on macOS arm64 with Python 3.12 and PyTorch 2.7.1. This includes the device resolver, solver math, grid-interpolator choices for AIFS, FCN3, Aurora, SFNO, and ACE2, and loading every tracked `config_test_*.yml`.
-- `make check-ace2`: `1 passed in 60.08s` on CPU with the pinned mini checkpoint, one 24-hour window, and 50 epochs.
+- Sunspot PBS job `12483369`, branch commit `bae663c3c8b77f09d58444ec7ed32cbfa938ad13`, ran on compute node `x1921c0s6b0n0` with the ALCF Python 3.12.12 / PyTorch `2.13.0a0+gitcf30153` environment: Ruff passed; `102 passed` in 34.43 s; mini ACE2 solver `1 passed` in 119.54 s; XPU forward/backward passed with finite loss and gradient. PBS reported `job_state = F`, `Exit_status = 0`, walltime `00:03:50`.
+- Sunspot job `12483370` separately tried the mini ACE2 solver with `LW4DVAR_DEVICE=auto`. Device resolution selected `xpu`, but installed `fme 2026.5.1` selected CPU, so `ACE2Model` stopped with `device=xpu but fme will place the model on cpu` (`Exit_status = 1`). The installed FME selector supports CUDA, MPS, or CPU; ACE2-on-XPU is not validated. Keep ACE2 on CPU on Sunspot and use the standalone XPU smoke for XPU coverage.
 - The tracked configs cover AIFS 1.1/2.0/3, FCN3, ACE2, SFNO, Aurora, GraphCast, and NGCM. In the validations recorded here, ACE2 is the only backend with a checkpoint-backed forward/solver run. The other backends have config and shared-grid coverage, not forward runs.
 
-The model submodules are not initialized in this checkout. The full test configs also point at external checkpoint and cache paths, so additional backend runs need checkpoints and caches staged in readable storage first. The repository CI pin `torch==2.7.1+cpu` has no macOS arm64 wheel; the local check used PyTorch 2.7.1 from PyPI in a temporary `uv` environment. The checked-in requirements were unchanged.
+The model submodules are not initialized in this checkout. The full test configs also point at external checkpoint and cache paths, so additional backend runs need checkpoints and caches staged in readable storage first. The test-suite result above is from an ALCF compute node; the earlier macOS run is not accelerator validation.
 
 ## Run evidence
 
-Each completed PBS job ended with `job_state = F` and `Exit_status = 0`.
+Each completed successful PBS job ended with `job_state = F` and `Exit_status = 0`. The ACE2/XPU attempt above ended with `Exit_status = 1` for the documented FME device mismatch.
 
 | Job | System / node | Wall time | Output | Tested code |
 |---|---|---:|---|---|
@@ -47,6 +47,8 @@ Each completed PBS job ended with `job_state = F` and `Exit_status = 0`.
 | `33440.sirius-pbs-0001.hsn.cm.sirius.alcf.anl.gov` | Sirius / `x3200c0s13b0n0` | `00:00:17` | `torch=2.14.0 cuda=13.0`, finite loss and gradient | `6a987e5` |
 | `33446.sirius-pbs-0001.hsn.cm.sirius.alcf.anl.gov` | Sirius / `x3200c0s13b0n0` | `00:01:05` | `torch 2.14.0 cuda 13.0 cudnn 92600 available True`; `1 passed in 33.62s` | `29507ce` |
 | `7838743.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov` | Polaris / `x3005c0s19b1n0` | `00:01:04` | `device=cuda torch=2.8.0+cu128 cuda=12.8`, finite loss and gradient | `6a987e5` |
+| `12483369.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1921c0s6b0n0` | `00:03:50` | `102` unit tests; mini ACE2 solver pass; XPU forward/backward finite loss and gradient | `bae663c` |
+| `12483370.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1921c0s6b0n0` | `00:00:29` | ACE2 with auto device stopped because FME chose CPU while resolver chose XPU | `bae663c` |
 
 The Sunspot mini solver job wrote `$HOME/lw4dvar-torch-sunspot-port/lw4dvar-mini-ace2.o12483310`; its checkpoint SHA-256 was `c3d6818df5478ea5efb53b72b38c371a8da7a90fb8aa7108a796b8edebab0fe3`. Sirius job `33446` ran the mini fixture with one 24-hour window and 50 epochs. It checked that the cost decreased and verified analysis and forecast outputs. The fixture is not the full ACE2 dataset.
 
