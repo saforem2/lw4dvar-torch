@@ -46,9 +46,9 @@ uvx --from git+https://github.com/saforem2/ezpz ezpz submit --remote sunspot --n
 ```
 
 The setup script uses `ezpz_setup_env`; the test script installs dependencies
-with `uv` and keeps the site's PyTorch build. Job `12483369` completed this
+with `uv` and keeps the site's PyTorch build. Job `12483373` completed this
 validation on `x1921c0s6b0n0` at branch commit
-`bae663c3c8b77f09d58444ec7ed32cbfa938ad13`. Results and the ACE2/XPU limitation
+`791c29a238285f6c0debf730c65cae5a7043b224`. Results and the ACE2/XPU limitation
 are recorded in [`ALCF_STATUS.md`](ALCF_STATUS.md).
 
 The full solver entry point is `long_window_4dvar.py`. Run it with a config
