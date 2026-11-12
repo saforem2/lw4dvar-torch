@@ -15,7 +15,7 @@
 
 # Train an ACE2 checkpoint with fme on Ursa u1-gh nodes (one NVIDIA GH200
 # per node: 96 GB HBM, 72 Grace aarch64 cores, 213 GB RAM, IB mlx5_0; one
-# rank per node, DDP over NCCL); see ace2-training.md. aarch64 twin of
+# rank per node, DDP over NCCL); see docs/ace2-training.md. aarch64 twin of
 # run_ace2_train_ursa.sh, in the ace2-gh env (the ace2 pip lock with the
 # aarch64 torch 2.7.1+cu128 wheel, which bundles its CUDA libraries, so no
 # cuda module). Submit from the repo root:

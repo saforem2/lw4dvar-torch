@@ -8,7 +8,7 @@
 # QOS gpuwf (the only one allowed on u1-mi300x and u1-gh) caps a job at 8
 # GPUs and an account at 11520 running GPU-min per GPU type (8 GPUs x 24 h),
 # and u1-mi300x allowed ONE submitted job per user, so jobs aren't chained
-# with --dependency (a u1-gh job was accepted alongside); see ace2-training.md.
+# with --dependency (a u1-gh job was accepted alongside); see docs/ace2-training.md.
 # Submits the next job (fme resumes from the latest checkpoint) only when
 #   - no $JOB job of ours is queued or running,
 #   - out.log has no "Time taken for epoch MAX_EPOCHS", and

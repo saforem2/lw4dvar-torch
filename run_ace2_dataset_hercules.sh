@@ -10,7 +10,7 @@
 #SBATCH --mem=128g
 
 # Build ACE2 training files from public ARCO-ERA5 on Hercules (MSU)
-# (backends/ace2/ace2_dataset.py; see ace2-training.md). Hercules compute nodes
+# (backends/ace2/ace2_dataset.py; see docs/ace2-training.md). Hercules compute nodes
 # have no internet; the service partition (hercules-dtn-[1-4]) does. Submit
 # from the repo root:
 #   sbatch --export=ALL,START=2020-01,END=2020-01 run_ace2_dataset_hercules.sh

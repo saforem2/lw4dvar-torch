@@ -10,7 +10,7 @@
 #PBS -e ace2_dataset.err
 
 # Build ACE2 training files from public ARCO-ERA5 on a Polaris compute node
-# (backends/ace2/ace2_dataset.py; see ace2-training.md). Login nodes cap a
+# (backends/ace2/ace2_dataset.py; see docs/ace2-training.md). Login nodes cap a
 # user at 8 GB / 8 CPUs, too small for this. Submit from the repo root:
 #   qsub -v START=2020-01,END=2020-01 run_ace2_dataset_polaris.sh
 #   qsub -q debug -l walltime=01:00:00 -v START=2020-01,END=2020-01 run_ace2_dataset_polaris.sh
@@ -32,7 +32,7 @@ export HTTP_PROXY=${http_proxy} HTTPS_PROXY=${https_proxy}
 
 # THREADS=N caps numpy/BLAS/OpenMP/Blosc/zarr threads per worker (default: the
 # libraries' own; capping to 1 was not faster in the 2020-01 tests -- see
-# ace2-training.md).
+# docs/ace2-training.md).
 if [ -n "${THREADS}" ]; then
     export OMP_NUM_THREADS=${THREADS} OPENBLAS_NUM_THREADS=${THREADS} MKL_NUM_THREADS=${THREADS}
     export NUMEXPR_NUM_THREADS=${THREADS} BLOSC_NTHREADS=${THREADS} ZARR_THREADING__MAX_WORKERS=${THREADS}

@@ -1,5 +1,5 @@
 # ACE2 at 32 layers, embed_dim 512, with the CRTM layer variables and land
-# surface: ace2-crtm-16layer-train-config.yaml (ace2-training.md, "Training:
+# surface: ace2-crtm-16layer-train-config.yaml (docs/ace2-training.md, "Training:
 # 16 layers, CRTM + land") expanded to the 32-layer grid with
 # ace2-era5-32layer-e512-train-config-ursa.yaml's embed_dim 512. Generated
 # (regenerate, don't edit) by expanding every 16-layer variable j to

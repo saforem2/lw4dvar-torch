@@ -6,7 +6,7 @@ long_window_4dvar_utils.get_model() when the active env has that API; configs
 still say `model_backend: aifs`.
 
 What changed upstream, and how this class handles it (see
-integrate_multiple_backends.md for the investigation):
+docs/integrate_multiple_backends.md for the investigation):
 
   - The model is multi-dataset: `forward()` takes and returns
     `{dataset_name: tensor}`, pre/post-processors are per-dataset

@@ -1,6 +1,6 @@
 """
 Forcing files and initial conditions for running OUR trained ACE2 checkpoint
-(ace2-training.md) in lw4dvar, built from our training dataset
+(docs/ace2-training.md) in lw4dvar, built from our training dataset
 (backends/ace2/ace2_dataset.py output: monthly YYYYMM0100.nc, 6-hourly).
 
 Why not the HF files: our dataset has its own HGTsfc (41 m rms from Ai2's),

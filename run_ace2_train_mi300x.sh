@@ -15,7 +15,7 @@
 
 # Train an ACE2 checkpoint with fme on Ursa u1-mi300x nodes (8 x 192 GB AMD
 # MI300X each, one rank per GPU, DDP over RCCL; one mlx5 IB HCA per node);
-# see ace2-training.md. ROCm twin of run_ace2_train_ursa.sh, in the
+# see docs/ace2-training.md. ROCm twin of run_ace2_train_ursa.sh, in the
 # ace2-rocm env (the ace2 env's pip lock with torch 2.7.1+rocm6.3; the wheel
 # bundles its own ROCm/RCCL, so no rocm module is loaded). Submit from the
 # repo root:

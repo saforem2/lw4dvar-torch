@@ -1,4 +1,4 @@
-# ACE2 at 32 layers (nested split of the 8-layer grid, ace2-training.md "32-layer
+# ACE2 at 32 layers (nested split of the 8-layer grid, docs/ace2-training.md "32-layer
 # vertical grid") with embed_dim 512, trained from scratch on 1979-2025 of
 # /scratch4/BMC/gsienkf/whitaker/ace2_era5_1deg_32layer; validation and the inline
 # inference on 2026-01..03 (built from ARCO 2026-10-20; CO2 extrapolated; ARCO's

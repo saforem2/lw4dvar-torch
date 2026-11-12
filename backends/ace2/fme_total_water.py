@@ -10,7 +10,7 @@ so without this a CRTM checkpoint's Stepper.step raises KeyError. `install()`
 makes AtmosphereData.specific_total_water fall back to the sum of the
 components when the total is absent; data that carry the total are
 unaffected. Same patch as training (backends/ace2/training/fme_train.py,
-see ace2-training.md "Total water for the corrector"), so inference applies
+see docs/ace2-training.md "Total water for the corrector"), so inference applies
 the corrector exactly as the checkpoint was trained with.
 """
 

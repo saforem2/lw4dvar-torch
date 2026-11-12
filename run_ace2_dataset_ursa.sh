@@ -10,7 +10,7 @@
 #SBATCH --mem=128g
 
 # Build ACE2 training files from public ARCO-ERA5 on Ursa
-# (backends/ace2/ace2_dataset.py; see ace2-training.md). Ursa compute nodes
+# (backends/ace2/ace2_dataset.py; see docs/ace2-training.md). Ursa compute nodes
 # have no internet; u1-service (ufe05-14) does, directly (no proxy). Submit
 # from the repo root:
 #   sbatch --export=ALL,START=2020-01,END=2020-01 run_ace2_dataset_ursa.sh

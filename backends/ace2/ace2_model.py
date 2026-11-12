@@ -33,7 +33,7 @@ documentation):
   and decoder), shape `(embed_dim, h, w)` = `(384, 180, 360)`. Injected via
   a forward hook on `blocks[-1]`, registered/removed INSIDE the checkpointed
   function so the backward recompute re-applies it.
-- Our own checkpoints (ace2-training.md) may differ in layer count (16/32),
+- Our own checkpoints (docs/ace2-training.md) may differ in layer count (16/32),
   grid (e.g. the 2.5 deg mini ACE2 for CI) and variables: the CRTM+land ones
   carry specific_humidity_k + specific_total_condensate_k instead of
   specific_total_water_k, plus ozone/soil/snow prognostics. Everything here

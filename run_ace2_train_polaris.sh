@@ -11,7 +11,7 @@
 
 # Train an ACE2 checkpoint with fme on Polaris nodes (4 x 40 GB A100 each, one
 # rank per GPU, DDP over NCCL; Slingshot between nodes via the AWS-OFI NCCL
-# plugin); see ace2-training.md. Submit from the repo root:
+# plugin); see docs/ace2-training.md. Submit from the repo root:
 #   qsub run_ace2_train_polaris.sh       # 4 nodes, backends/ace2/training/ace2-era5-vars-train-config.yaml
 #   qsub -l select=1:system=polaris run_ace2_train_polaris.sh     # 1 node
 #   qsub -v CONFIG=other.yaml,OVERRIDE="max_epochs=1" run_ace2_train_polaris.sh
@@ -35,7 +35,7 @@ conda activate /home/jwhitaker/.conda/envs/ace2
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # DataLoader workers pass tensors over AF_UNIX sockets created under TMPDIR,
 # whose path must be < 108 characters: a long job TMPDIR hung the 2026-10-28
-# smoke test ("OSError: AF_UNIX path too long"). See ace2-training.md.
+# smoke test ("OSError: AF_UNIX path too long"). See docs/ace2-training.md.
 echo "ace2_train: job TMPDIR=${TMPDIR:-unset} (${#TMPDIR} chars), using /tmp"
 export TMPDIR=/tmp
 
@@ -44,7 +44,7 @@ NNODES=${NNODES:-$(sort -u ${PBS_NODEFILE} | wc -l)}
 # only between nodes: within a node NCCL uses NVLink. Since 2026-10 (driver
 # 580 / CUDA 13, libfabric 2.3) the aws-ofi-nccl 1.9.1 plugin fails to open a
 # CXI domain and segfaults in the first collective, so 1-node jobs (debug
-# smoke tests) skip it. See ace2-training.md.
+# smoke tests) skip it. See docs/ace2-training.md.
 if [ ${NNODES} -gt 1 ]; then
     export NCCL_NET_GDR_LEVEL=PHB NCCL_CROSS_NIC=1 NCCL_COLLNET_ENABLE=1 NCCL_NET="AWS Libfabric"
     export LD_LIBRARY_PATH=/soft/libraries/aws-ofi-nccl/v1.9.1-aws/lib:/soft/libraries/hwloc/lib:${LD_LIBRARY_PATH}

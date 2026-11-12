@@ -69,10 +69,10 @@ compares global 500 hPa height RMSE at each cycle's +6-hour verification time,
 before and after assimilation. The changes are `-0.04 m` and `-0.03 m`; this
 two-cycle canary does not establish a useful forecast improvement.
 
-![ACE2 Sunspot canary loss traces and Z500 error changes](figures/ace2_sunspot_2cycle_10it.png)
+![ACE2 Sunspot canary loss traces and Z500 error changes](../figures/ace2_sunspot_2cycle_10it.png)
 
-Figure source: [`plot_ace2_sunspot_canary.py`](figures/plot_ace2_sunspot_canary.py)
-and [SVG](figures/ace2_sunspot_2cycle_10it.svg). The script reads the original
+Figure source: [`plot_ace2_sunspot_canary.py`](../figures/plot_ace2_sunspot_canary.py)
+and [SVG](../figures/ace2_sunspot_2cycle_10it.svg). The script reads the original
 loss files and stdout log on Sunspot. Rebuild from the repository root with:
 
 ```bash
@@ -80,7 +80,7 @@ uv run --no-project --with matplotlib python figures/plot_ace2_sunspot_canary.py
   --output-dir output/test_ace2_2cycle_10it_sunspot \
   --job-log lw4dvar-ace2-2x10-serial.o12483476
 ```
-The run config is [`config_ace2_2cycle_10it.yml`](config_ace2_2cycle_10it.yml);
+The run config is [`config_ace2_2cycle_10it.yml`](../config_ace2_2cycle_10it.yml);
 its SHA-256 is `3355e009785267def6dc3cb77d014c725d2919015a6f6c15a037b91735f22c40`.
 
 ## Run evidence

@@ -1,4 +1,4 @@
-# ACE2 with 16 layers, CRTM layer variables and land surface (ace2-training.md,
+# ACE2 with 16 layers, CRTM layer variables and land surface (docs/ace2-training.md,
 # "CRTM layer variables" and "Training: 16 layers, CRTM + land"): vapor
 # (specific_humidity), total condensate (specific_total_condensate) and ozone
 # (ozone_mass_mixing_ratio) replace specific_total_water as prognostics.
@@ -20,7 +20,7 @@
 #   troposphere) 0.1 (w^2 1/50 of the layers above).
 # - Normalization: ace2_era5_1deg_16layer/stats-1990-01-2019-12-condensate-
 #   floor-land (condensate std floored at 1e-6 kg/kg in layers 0-2, plus the
-#   capped snow's stats; see ace2-training.md).
+#   capped snow's stats; see docs/ace2-training.md).
 # - Train 1979-2014 + 2016-2025; 2015 held out (validation, inline inference).
 # - 112 input / 118 output channels (108 / 114 without land); by the memory
 #   probe, fits 1 sample/GPU on 4 Polaris nodes without checkpointing, at the

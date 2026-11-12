@@ -1,4 +1,4 @@
-# ACE2 trained from scratch on our ARCO-ERA5 dataset (ace2-training.md).
+# ACE2 trained from scratch on our ARCO-ERA5 dataset (docs/ace2-training.md).
 # Stepper = the ACE2-ERA5 checkpoint's (architecture, in/out names incl.
 # global_mean_co2 and the TMP2m/Q2m/UGRD10m/VGRD10m/TMP850/h500 channels, loss
 # weights, corrector), so results compare directly with ACE2-ERA5 in lw4dvar.
@@ -12,7 +12,7 @@
 # Sized for 4 Polaris nodes (16 x 40 GB A100, 1 sample/GPU): no gradient
 # checkpointing, 0.60 s/batch. On 1 node (4 samples/GPU) it does not fit:
 # add --override stepper.step.config.builder.config.checkpointing=3 (same
-# math, ~30% more compute; 2.83 s/batch). See ace2-training.md.
+# math, ~30% more compute; 2.83 s/batch). See docs/ace2-training.md.
 # fme (ace2 env, 2026.5.1): torchrun --nproc_per_node 4 -m fme.ace.train THIS.yaml
 experiment_dir: /lus/eagle/projects/moonshot-reanalysis/jwhitaker/ace2_training/ace2-era5-vars-1979-2022-no2015
 save_checkpoint: true

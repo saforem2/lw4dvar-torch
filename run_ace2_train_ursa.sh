@@ -14,7 +14,7 @@
 #SBATCH -t 7-00:00:00
 
 # Train an ACE2 checkpoint with fme on Ursa u1-h100 nodes (2 x 80 GB H100
-# each, one rank per GPU, DDP over NCCL/InfiniBand); see ace2-training.md.
+# each, one rank per GPU, DDP over NCCL/InfiniBand); see docs/ace2-training.md.
 # Ursa twin of run_ace2_train_polaris.sh. Submit from the repo root:
 #   sbatch run_ace2_train_ursa.sh        # 4 nodes, backends/ace2/training/ace2-era5-vars-train-config-ursa.yaml
 #   sbatch -N 2 run_ace2_train_ursa.sh   # 2 nodes (4 samples/GPU)

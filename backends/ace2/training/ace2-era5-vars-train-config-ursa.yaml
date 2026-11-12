@@ -1,12 +1,12 @@
 # Ursa copy of ace2-era5-vars-train-config.yaml (identical except paths; keep
 # the two in sync). ACE2 trained from scratch on our ARCO-ERA5 dataset
-# (ace2-training.md): ACE2-ERA5's stepper with ACE2.1-ERA5's training
+# (docs/ace2-training.md): ACE2-ERA5's stepper with ACE2.1-ERA5's training
 # settings; train 1979-2014 + 2016-2022, 2015 held out for validation and
 # inline inference (16 ICs: a multiple of 2, 4, 8 or 16 GPUs).
 # Ursa u1-h100 nodes have 2 x 80 GB H100: global batch 16 is 8 samples/GPU on
 # 1 node, 4 on 2, 2 on 4, 1 on 8. No gradient checkpointing needed from 2
 # nodes up (embed 384: ~17 GB at 1 sample, ~25 GB at 2, est. ~42 GB at 4
-# before DDP's +1.7 GB -- see "Memory probe" in ace2-training.md); on 1 node
+# before DDP's +1.7 GB -- see "Memory probe" in docs/ace2-training.md); on 1 node
 # add --override stepper.step.config.builder.config.checkpointing=3.
 # Launcher: run_ace2_train_ursa.sh.
 experiment_dir: /scratch4/BMC/gsienkf/whitaker/ace2_training/ace2-era5-vars-1979-2022-no2015

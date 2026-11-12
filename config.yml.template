@@ -13,7 +13,7 @@ exp:
   # aifs2-1deg-ic1) keep model_backend: aifs but run in the aifs3 env
   # (run_aifs3.sh), where get_model() picks aifs3_model.AIFS3Model -- see
   # config_test_aifs3.yml. The envs are NOT
-  # co-installed (see integrate_multiple_backends.md), so backends not selected here don't need
+  # co-installed (see docs/integrate_multiple_backends.md), so backends not selected here don't need
   # to be importable at all in the env you actually run with.
   model_backend: fcn3  # or: aifs, aurora, ace2, sfno, ngcm
 
@@ -39,11 +39,11 @@ exp:
   cycle: True # cycling data assimilation -- REQUIRED (True) when n_init > 1;
   # load_config raises for n_init > 1 with cycle: False (it used to silently
   # skip advancing the analysis to the next cycle time, see
-  # integrate_multiple_backends.md "cycle: False with n_init > 1")
+  # docs/integrate_multiple_backends.md "cycle: False with n_init > 1")
   exp_name: 'test_v1' # data is saved in this subdirectory
 
   # --- path_model / model_backend-specific checkpoint keys ---
-  # NGCM (JAX, run_ngcm.sh; integrate_jax_backend.md): no path_model. An
+  # NGCM (JAX, run_ngcm.sh; docs/integrate_jax_backend.md): no path_model. An
   # ngcm-train run dir and checkpoint step, its data store (ICs, forcings
   # and z500 truth are read from it directly), and the ngcm-train checkout:
   #   ngcm_exp: '/scratch4/BMC/gsienkf/whitaker/ngcm_runs/r72_top150'
@@ -57,7 +57,7 @@ exp:
   # the original NeuralGCM runs' {specific_humidity: 1e5} in NeuralGCM's
   # nondimensional units.
   # Official NeuralGCM (JAX, run_ngcm.sh, model_backend: neuralgcm;
-  # integrate_jax_backend.md): a PressureLevelModel pickle and the per-time
+  # docs/integrate_jax_backend.md): a PressureLevelModel pickle and the per-time
   # ERA5 input netCDFs (ICs, forcings, verification); ps_operator must be
   # 'logpinterp'. neuralgcm_state_scales default
   # {tracer_specific_humidity: 1e5}; tracers not named there are frozen.
@@ -91,7 +91,7 @@ exp:
   # Aurora: path_model is the Hugging Face cache snapshot directory
   # aurora_prefetch_checkpoint.py fetches into (NOT a git submodule, unlike
   # AIFS/FCN3 -- microsoft/aurora on HF is a shared monorepo of many
-  # unrelated checkpoints; see integrate_multiple_backends.md) -- no separate model_name key,
+  # unrelated checkpoints; see docs/integrate_multiple_backends.md) -- no separate model_name key,
   # the checkpoint/static-pickle filenames inside it are fixed.
   #   path_model: './backends/aurora/hf_cache/models--microsoft--aurora/snapshots/a96afd7ee6d65e3bd2d476f3be798a25a56f2296/'
   # ACE2: path_model is the backends/ace2/ACE2-ERA5 git submodule
@@ -103,7 +103,7 @@ exp:
   # h500/TMP850 verification from backends/ace2/ace2_ic.py (ace2ic env,
   # login node: `ace2_ic.py DATE` and `ace2_ic.py --verif DATE ...`).
   # ps_operator defaults to 'ps_native'; reset_skt_ocean is rejected.
-  # Our own trained checkpoint (ace2-training.md): path_model = its
+  # Our own trained checkpoint (docs/ace2-training.md): path_model = its
   # training_checkpoints/ dir, model_name 'best_ckpt.tar' (current fme layout,
   # read as well as the released one), and forcing_dir/ic_cache built from
   # OUR dataset by backends/ace2/ace2_inference_files.py -- never the HF
@@ -317,7 +317,7 @@ exp:
 
   # compile_wrapper: Aurora ONLY (default False, meaningless for AIFS/FCN3).
   # Wraps the Aurora model in torch.compile() -- a real, confirmed ~1.87x
-  # steady-state speedup (see integrate_multiple_backends.md "Aurora per-epoch runtime
+  # steady-state speedup (see docs/integrate_multiple_backends.md "Aurora per-epoch runtime
   # optimization"), correctness-verified, but at a real one-time
   # compilation cost (130-270s, not fixed, paid separately for each
   # distinct (steps, use_checkpoint) combination the run actually

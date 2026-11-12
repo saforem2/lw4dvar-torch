@@ -13,7 +13,7 @@ checkpointing (what fme's own OptimizationConfig.checkpoint uses) computes
 the same gradients. Reported as github.com/ai2cm/ace/issues/1577 (ace main
 fixed only conditional_sfno, in #1493; the modulus SFNO behind the
 `SphericalFourierNeuralOperatorNet` builder was still unfixed at 24cdac446).
-Drop this wrapper once the env's fme has the fix. See ace2-training.md.
+Drop this wrapper once the env's fme has the fix. See docs/ace2-training.md.
 """
 
 import functools

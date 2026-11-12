@@ -31,7 +31,7 @@ documented in `config.yml.template`.
   same plus graphcast), all
   under `/scratch4/BMC/gsienkf/whitaker/conda/envs/`; `ace2-rocm` is the
   `ace2` env with ROCm torch, for ACE2 training on Ursa's AMD `u1-mi300x`
-  nodes (`run_ace2_train_mi300x.sh`; see `ace2-training.md`); `ace2ic` is a
+  nodes (`run_ace2_train_mi300x.sh`; see `docs/ace2-training.md`); `ace2ic` is a
   login-node-only env for ACE2 IC/verification fetching. Backend modules are
   imported lazily so a process never needs another backend's dependencies.
   Exception: `aifs2-1.0deg-v1.0` (a user-trained checkpoint, still
@@ -65,10 +65,10 @@ documented in `config.yml.template`.
 
 | Document | Read it when working on |
 |---|---|
-| `running_at_alcf.md` | running on ALCF Polaris (PBS): building envs there, `run_ace2_polaris.sh`, A100 memory limits, Eagle data paths |
-| `ace2-training.md` | training our own ACE2 checkpoint: building the training dataset from public ARCO-ERA5 (`backends/ace2/ace2_dataset.py`, `run_ace2_dataset_polaris.sh`), CO2, normalization stats, training configs and `run_ace2_train_polaris.sh` (fme, the checkpointing workaround `fme_train.py`), adding vertical layers for radiances |
-| `integrate_multiple_backends.md` | anything backend-specific: adding or modifying a backend, backend dispatch, conda envs, checkpoints/submodules, IC/verification fetching, known backend bugs and pitfalls, validation and tuning results (learning rates, window lengths, checkpointing, `torch.compile`), the balance penalty (`jc_ps_weight`), obs-density weighted Jo (`obs_density_box_deg`), area weights, the z500 diagnostics, the AIFS dry-air mass fixer (`dry_mass_fixer`)|
-| `integrate_jax_backend.md` | the torch/JAX bridge (`backends/jax_bridge.py`), the `ngcm`, `neuralgcm` and `graphcast` backends, the `ngcm-torch` and `graphcast-torch` envs, `backends/hybrid_levels.py` |
+| `docs/running_at_alcf.md` | running on ALCF Polaris (PBS): building envs there, `run_ace2_polaris.sh`, A100 memory limits, Eagle data paths |
+| `docs/ace2-training.md` | training our own ACE2 checkpoint: building the training dataset from public ARCO-ERA5 (`backends/ace2/ace2_dataset.py`, `run_ace2_dataset_polaris.sh`), CO2, normalization stats, training configs and `run_ace2_train_polaris.sh` (fme, the checkpointing workaround `fme_train.py`), adding vertical layers for radiances |
+| `docs/integrate_multiple_backends.md` | anything backend-specific: adding or modifying a backend, backend dispatch, conda envs, checkpoints/submodules, IC/verification fetching, known backend bugs and pitfalls, validation and tuning results (learning rates, window lengths, checkpointing, `torch.compile`), the balance penalty (`jc_ps_weight`), obs-density weighted Jo (`obs_density_box_deg`), area weights, the z500 diagnostics, the AIFS dry-air mass fixer (`dry_mass_fixer`)|
+| `docs/integrate_jax_backend.md` | the torch/JAX bridge (`backends/jax_bridge.py`), the `ngcm`, `neuralgcm` and `graphcast` backends, the `ngcm-torch` and `graphcast-torch` envs, `backends/hybrid_levels.py` |
 
 Add new task documents (e.g. `adding_new_observations.md`) to this table,
 with one line saying when to read them.
