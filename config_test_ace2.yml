@@ -4,7 +4,7 @@ exp:
   nhrs_back: 48
   restart: False
   rpath: './output/test_ace2_6h_5d_50it/'
-  obspath: '/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs'
+  obspath: './psobs'
   nobs_max: 15000
   ic_suffix: '120h_50it'
   sdate: '2015-01-01T00'

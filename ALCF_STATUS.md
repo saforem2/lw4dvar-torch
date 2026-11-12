@@ -71,7 +71,7 @@ Logs remain on their respective systems:
 
 ## Full-model pilot
 
-The old Polaris config points to `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; that path returns `Permission denied` for this account. The generic config points to `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs`, which is not readable from Sunspot.
+The old Polaris config points to `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; that path returns `Permission denied` for this account. The generic ACE2 config used to point to `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs`, which is not readable from Sunspot. It now reads `./psobs`; a Sunspot symlink points that relative path at the staged ISPD data.
 
 A fresh public source is now staged on Sunspot under
 `/tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/`. It contains 260

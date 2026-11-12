@@ -72,7 +72,13 @@ uv run --no-project --with h5py python test_scripts/convert_ispd_hdf5.py \
 ```
 
 This fetches any missing source files directly from NCAR GDEX and writes the
-solver-format files in the same command.
+solver-format files in the same command. `config_test_ace2.yml` reads the
+repo-relative `./psobs` path; from the Sunspot checkout root, link it to the
+staged output:
+
+```bash
+ln -s /tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/psobs psobs
+```
 
 Use the converted `psobs` directory as `obspath`. This source has 9,968
 observations at `2015-01-15T00`, versus 10,821 in the historical archive, so
