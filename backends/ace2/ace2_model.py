@@ -56,6 +56,7 @@ import datetime
 import glob
 import os
 import re
+import sys
 
 import numpy as np
 import torch
@@ -168,6 +169,53 @@ def _find_sfno(stepper: Stepper) -> SphericalFourierNeuralOperatorNet:
     raise RuntimeError("no SphericalFourierNeuralOperatorNet found in the ACE2 stepper")
 
 
+def _configure_fme_device(device: torch.device) -> None:
+    """Teach FME's process-wide device selector about an explicitly chosen XPU.
+
+    FME releases that predate XPU support choose CPU on Intel systems. FME
+    imports ``get_device`` into many modules, so update those references as
+    well as the canonical function before ``Stepper.from_state`` constructs
+    modules and buffers. Do not override FME's explicit ``FME_FORCE_CPU``.
+    """
+    if device.type != "xpu":
+        return
+    if not hasattr(torch, "xpu") or not torch.xpu.is_available():
+        raise RuntimeError("ACE2 was configured for XPU, but torch.xpu is unavailable")
+
+    import fme
+    import fme.core.device as fme_device
+
+    if fme_device.get_device().type == "xpu":
+        return
+    if getattr(fme_device, "_FORCE_CPU", False):
+        raise ValueError("FME_FORCE_CPU=1 conflicts with the requested ACE2 XPU device")
+
+    old_get_device = fme_device.get_device
+    old_using_gpu = fme_device.using_gpu
+
+    def get_device() -> torch.device:
+        return device
+
+    def using_gpu() -> bool:
+        return device.type in {"cuda", "xpu"}
+
+    # FME's top-level __init__ imports subpackages before this adapter runs;
+    # replace only aliases that point at its original selector functions.
+    for name, module in tuple(sys.modules.items()):
+        if name == "fme" or name.startswith("fme."):
+            namespace = vars(module)
+            for attr, value in tuple(namespace.items()):
+                if value is old_get_device:
+                    setattr(module, attr, get_device)
+                elif value is old_using_gpu:
+                    setattr(module, attr, using_gpu)
+
+    fme_device.get_device = get_device
+    fme_device.using_gpu = using_gpu
+    fme.get_device = get_device
+    fme.using_gpu = using_gpu
+
+
 class ACE2Model(forecast_model.LatentForecastModel):
     """Wraps a loaded ACE2-ERA5 checkpoint (`fme` Stepper) for differentiable
     rollouts. `model.stepper` stays public, same escape-hatch rationale as
@@ -196,9 +244,10 @@ class ACE2Model(forecast_model.LatentForecastModel):
         plevs : tuple
             Pressure levels (hPa) decode_state derives 'z'/'t'/'q'/'u'/'v' on.
         """
+        self._device = forecast_model.resolve_device(device)
+        _configure_fme_device(self._device)
         from fme.core.device import get_device
 
-        self._device = forecast_model.resolve_device(device)
         if get_device().type != self._device.type:
             raise ValueError(f"device={device!r} but fme will place the model on {get_device()}")
         if self._device.type == "cuda":

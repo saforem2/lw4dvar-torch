@@ -18,19 +18,42 @@ environment. The install uses `uv`; `--no-deps` keeps it from replacing the
 site-provided PyTorch build. `requirements-alcf-ace2.txt` supplies the solver
 and mini-test dependencies.
 
-Run the bundled mini ACE2 4D-Var case inside a compute allocation. On Sunspot,
-the tiny ACE2 solver case uses CPU because the installed `fme` release does not
-select XPU. `test_scripts/smoke_sunspot_xpu.py` separately checks XPU device
-selection and autograd.
+Run the bundled mini ACE2 4D-Var case inside a compute allocation. `auto`
+selects the active accelerator through `ezpz`; the ACE2 wrapper adapts FME's
+device selector on XPU systems.
 
 ```bash
-LW4DVAR_DEVICE=cpu ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- \
+LW4DVAR_DEVICE=auto ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- \
   python3 -m pytest -q tests/ace2/test_ace2_mini.py
 ```
 
 The test downloads a 22 MB fixture checkpoint when needed, runs one 24-hour
 window for 50 epochs, checks that the cost decreases, and verifies the
 analysis and forecast files. It is a mini fixture, not the full ACE2 workload.
+
+## Full ACE2 checkpoint on Sunspot XPU
+
+The released 1° ACE2 checkpoint, its 2020 initial condition, and matching
+forcing were exercised on a Sunspot XPU compute node. The two 2020 inputs are
+public LFS files from `allenai/ACE2-ERA5`; their SHA-256 values are recorded in
+[`ALCF_STATUS.md`](ALCF_STATUS.md). With those files present, submit the full
+checkpoint forecast/gradient smoke from a Sunspot login node:
+
+```bash
+uvx --from git+https://github.com/saforem2/ezpz ezpz submit \
+  --scheduler PBS --no-launch \
+  --env-setup-script "$PWD/test_scripts/alcf_env_setup.sh" \
+  -N 1 -q workq --time 00:30:00 -A datascience --filesystems tegu:home \
+  --job-name lw4dvar-ace2-xpu --workdir "$PWD" \
+  -- bash "$PWD/test_scripts/run_ace2_xpu_smoke.sh"
+```
+
+The smoke checks real initial-state decoding, a 4-step forecast, finite and
+matching latent gradients with and without checkpointing, an AdamW update,
+and 4- and 20-step forward/backward timings. Job `12483387` passed on
+`x1922c5s4b0n0`: 4-step forward/backward took 1.64 s, 20 steps took 9.27 s,
+with 10.08 GiB peak XPU allocation. This is model-level validation; the full
+240-cycle observation-assimilation run still needs `ic_cache_ace2`.
 
 ## Sunspot compute-node validation
 
@@ -46,10 +69,9 @@ uvx --from git+https://github.com/saforem2/ezpz ezpz submit --remote sunspot --n
 ```
 
 The setup script uses `ezpz_setup_env`; the test script installs dependencies
-with `uv` and keeps the site's PyTorch build. Job `12483373` completed this
-validation on `x1921c0s6b0n0` at branch commit
-`791c29a238285f6c0debf730c65cae5a7043b224`. Results and the ACE2/XPU limitation
-are recorded in [`ALCF_STATUS.md`](ALCF_STATUS.md).
+with `uv` and keeps the site's PyTorch build. The validation recipe now runs
+mini ACE2 with automatic accelerator selection. Recent XPU ACE2 results and
+PBS logs are recorded in [`ALCF_STATUS.md`](ALCF_STATUS.md).
 
 The full solver entry point is `long_window_4dvar.py`. Run it with a config
 and the full checkpoint, forcing, initial-condition and verification cache,
@@ -85,4 +107,4 @@ observations at `2015-01-15T00`, versus 10,821 in the historical archive, so
 results are not an exact reproduction. The original Polaris path is
 `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; it is not readable
 by this account. See [`ALCF_STATUS.md`](ALCF_STATUS.md) for the current cache
-and Sunspot ACE2 device limitations.
+requirements and hardware results.

@@ -21,21 +21,22 @@ Sirius needs [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged fo
 
 | System | Hardware | Result | Evidence |
 |---|---|---|---|
-| Sunspot | Intel XPU | XPU forward/backward smoke passed. Mini ACE2 solver test passed with its CPU test config. | PBS jobs `12483304`, `12483310` |
+| Sunspot | Intel XPU | Generic XPU autograd, mini ACE2 4D-Var, and full 1° ACE2 checkpoint forecast/gradient smokes passed. | PBS jobs `12483304`, `12483386`, `12483387` |
 | Sirius | 4× A100, CUDA 13.0 | CUDA forward/backward smoke and mini ACE2 solver test passed. | PBS jobs `33440`, `33446` |
 | Polaris | 4× A100, CUDA 12.8 | CUDA forward/backward smoke passed. Mini ACE2 solver test has not run; the per-user queue limit blocked submission. | PBS job `7838743` |
 | Aurora | Intel XPU | Not validated in this effort. | — |
 
-These are hardware smoke and mini-fixture results. The full-sized 240-cycle ACE2 run has not run on any system.
+The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. The full-sized 240-cycle ACE2 4D-Var experiment has not run on any system.
 
 ## Tests and model coverage
 
 - The checked-in `test_scripts/run_sunspot_validation.sh` ran as PBS job `12483373` at commit `791c29a238285f6c0debf730c65cae5a7043b224` on `x1921c0s6b0n0`: Ruff passed; `102 passed` in 16.12 s; mini ACE2 solver `1 passed` in 117.75 s; XPU forward/backward passed with finite loss and gradient. PBS reported `job_state = F`, `Exit_status = 0`, walltime `00:02:33`.
+- The updated checked-in recipe ran as PBS job `12483394` on `x1922c5s6b0n0`: Ruff passed; `102` unit tests passed in 26.59 s; mini ACE2 with automatic selection passed in 39.73 s; the standalone smoke reported `device=xpu`, finite loss `0.491877`, and gradient norm `0.176259`. PBS reported `job_state = F`, `Exit_status = 0`, walltime `00:01:29`.
 - Sunspot PBS job `12483369`, branch commit `bae663c3c8b77f09d58444ec7ed32cbfa938ad13`, ran on compute node `x1921c0s6b0n0` with the ALCF Python 3.12.12 / PyTorch `2.13.0a0+gitcf30153` environment: Ruff passed; `102 passed` in 34.43 s; mini ACE2 solver `1 passed` in 119.54 s; XPU forward/backward passed with finite loss and gradient. PBS reported `job_state = F`, `Exit_status = 0`, walltime `00:03:50`.
-- Sunspot job `12483370` separately tried the mini ACE2 solver with `LW4DVAR_DEVICE=auto`. Device resolution selected `xpu`, but installed `fme 2026.5.1` selected CPU, so `ACE2Model` stopped with `device=xpu but fme will place the model on cpu` (`Exit_status = 1`). The installed FME selector supports CUDA, MPS, or CPU; ACE2-on-XPU is not validated. Keep ACE2 on CPU on Sunspot and use the standalone XPU smoke for XPU coverage.
-- The tracked configs cover AIFS 1.1/2.0/3, FCN3, ACE2, SFNO, Aurora, GraphCast, and NGCM. In the validations recorded here, ACE2 is the only backend with a checkpoint-backed forward/solver run. The other backends have config and shared-grid coverage, not forward runs.
+- Historical Sunspot job `12483370` exposed that installed `fme 2026.5.1` selected CPU while the project selected XPU. `backends/ace2/ace2_model.py` now adapts FME's imported selector aliases when ACE2 explicitly resolves to XPU, while honoring `FME_FORCE_CPU=1`. The mini 4D-Var test and full released-checkpoint smoke now pass on XPU.
+- The tracked configs cover AIFS 1.1/2.0/3, FCN3, ACE2, SFNO, Aurora, GraphCast, and NGCM. ACE2 is the only backend with a checkpoint-backed forward/solver run in this validation; other backends still have config and shared-grid coverage, not forward runs.
 
-The model submodules are not initialized in this checkout. The full test configs also point at external checkpoint and cache paths, so additional backend runs need checkpoints and caches staged in readable storage first. The test-suite result above is from an ALCF compute node; the earlier macOS run is not accelerator validation.
+Other model configs still point at external checkpoints and caches, so additional backend runs need those assets staged in readable storage. The test-suite result above is from ALCF compute nodes; the earlier macOS run is not accelerator validation.
 
 ## Run evidence
 
@@ -50,7 +51,10 @@ Each completed successful PBS job ended with `job_state = F` and `Exit_status = 
 | `7838743.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov` | Polaris / `x3005c0s19b1n0` | `00:01:04` | `device=cuda torch=2.8.0+cu128 cuda=12.8`, finite loss and gradient | `6a987e5` |
 | `12483369.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1921c0s6b0n0` | `00:03:50` | `102` unit tests; mini ACE2 solver pass; XPU forward/backward finite loss and gradient | `bae663c` |
 | `12483370.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1921c0s6b0n0` | `00:00:29` | ACE2 with auto device stopped because FME chose CPU while resolver chose XPU | `bae663c` |
-| `12483373.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1921c0s6b0n0` | `00:02:33` | Checked-in recipe: `102` unit tests; mini ACE2 solver pass; XPU forward/backward finite loss and gradient | `791c29a` |
+| `12483373.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1921c0s6b0n0` | `00:02:33` | Checked-in recipe at the time: `102` unit tests; mini ACE2 CPU solver pass; XPU forward/backward finite loss and gradient | `791c29a` |
+| `12483386.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1922c5s4b0n0` | `00:00:46` | Mini ACE2 4D-Var on XPU; `1 passed in 40.42s`; PBS `Exit_status = 0` | current XPU adapter worktree |
+| `12483387.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1922c5s4b0n0` | `00:01:11` | Full 1° ACE2: 4-step forecast, finite latent gradient with and without checkpointing, AdamW loss reduction, 4/20-step timings; `ALL CHECKS PASSED`; PBS `Exit_status = 0` | current XPU adapter worktree |
+| `12483394.sunspot-pbs-0001.head.cm.sunspot.alcf.anl.gov` | Sunspot / `x1922c5s6b0n0` | `00:01:29` | Updated validation script: Ruff, `102` unit tests, mini ACE2 auto/XPU, XPU forward/backward; PBS `Exit_status = 0` | current XPU adapter worktree |
 
 The Sunspot mini solver job wrote `$HOME/lw4dvar-torch-sunspot-port/lw4dvar-mini-ace2.o12483310`; its checkpoint SHA-256 was `c3d6818df5478ea5efb53b72b38c371a8da7a90fb8aa7108a796b8edebab0fe3`. Sirius job `33446` ran the mini fixture with one 24-hour window and 50 epochs. It checked that the cost decreased and verified analysis and forecast outputs. The fixture is not the full ACE2 dataset.
 
@@ -59,12 +63,16 @@ The Sunspot mini solver job wrote `$HOME/lw4dvar-torch-sunspot-port/lw4dvar-mini
 The repository estimates each AIFS checkpoint at about `1 GB`, FCN3 at
 `2.8 GB`, and the Aurora checkpoint at about `4.9 GB` plus a static-field
 file. SFNO's NGC package is `6.9 GB` and converts to `2.1 GB` of weights. The
-mini ACE2 fixture used here is `22 MB`. Sunspot's `datascience` project quota
-after the run was `21.05 TB / 30 TB` used, about `8.95 TB` available.
+mini ACE2 fixture is `22 MB`; the released 1° ACE2 checkpoint is `1.7 GiB`,
+the 2020 initial condition is `113 MiB`, and yearly forcing is about `524 MiB`.
+Sunspot's `datascience` project quota has about `9 TB` available.
 
 Logs remain on their respective systems:
 
 - Sunspot XPU smoke: `$HOME/lw4dvar-xpu-final.o12483304`
+- Sunspot mini ACE2 XPU: `/tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-xpu.o12483386`
+- Sunspot full ACE2 XPU: `/tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-full-xpu.o12483387`
+- Sunspot updated validation: `/tegu/datascience/foremans/lw4dvar-torch/lw4dvar-validation-xpu.o12483394`
 - Sirius CUDA smoke: `$HOME/tmp/lw4dvar-torch-sirius-6a987e5/lw4dvar-sirius-smoke.o33440`
 - Polaris CUDA smoke: `$HOME/tmp/lw4dvar-torch-polaris-6a987e5/lw4dvar-cuda-smoke.o7838743`
 - New Sunspot validation logs: `/tegu/datascience/foremans/lw4dvar-validation-logs/` (`12483369`, `12483370`, `12483373`).
@@ -83,9 +91,15 @@ existing `psobs1` input convention. The Jan 15 00Z file has 9,968 observations;
 the historical file had 10,821, so this public-source run is not an exact
 reproduction of the old archive. The source dataset is [NCAR GDEX ISPD v4.7](https://gdex.ucar.edu/datasets/d132002/), DOI `10.5065/9EYR-TY90`.
 
-The public ACE2 checkpoint and 2014/2015 forcing files are also present in the
-Sunspot submodule and match their LFS SHA-256 pointers. The full run is not
-ready yet: the ACE2 initial-condition and verification cache (`ic_cache_ace2`)
-is absent. ACE2 also still cannot use Sunspot XPU through the installed FME
-device selector; the validated Sunspot ACE2 path is CPU, while XPU coverage is
-the separate forward/backward smoke.
+The public ACE2 checkpoint and 2014/2015 forcing files are present in the
+Sunspot submodule and match their LFS SHA-256 pointers. For the full-checkpoint
+XPU smoke, the matching 2020 inputs were downloaded from the public
+`allenai/ACE2-ERA5` model repository and verified against its LFS pointers:
+`initial_conditions/ic_2020.nc` is 118,449,852 bytes with SHA-256
+`43cbb3a32c5cff89c1576ec0555e580a483ae3cdeb72f27eb38f81425bddbd8d`, and
+`forcing_data/forcing_2020.nc` is 548,881,284 bytes with SHA-256
+`ed168a35c9e675fee073578f687c6a85bdd158f10dc7b641afa24f9e5eeee2ae`.
+
+ACE2 now runs on Sunspot XPU through the compatibility adapter described
+above. The 240-cycle 4D-Var experiment still needs the initial-condition and
+verification cache (`ic_cache_ace2`), which is not staged yet.
