@@ -36,6 +36,7 @@ import sys
 
 import numpy as np
 import torch
+import forecast_model
 
 from makani.models.model_package import LocalPackage, load_model_package
 from makani.models.stepper import _assert_checkpoint_safe

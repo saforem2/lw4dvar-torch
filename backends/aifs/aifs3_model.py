@@ -37,6 +37,7 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
+import forecast_model
 
 from anemoi.inference.config.run import RunConfiguration
 from anemoi.inference.runners import create_runner
