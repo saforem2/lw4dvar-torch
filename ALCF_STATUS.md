@@ -79,7 +79,7 @@ Logs remain on their respective systems:
 
 ## Full ACE2 240-cycle run on Sunspot
 
-Status snapshot: **2026-11-12 18:37 UTC**. The verified target is the
+Status snapshot: **2026-11-12 19:42 UTC**. The verified target is the
 `datascience` checkout at `/tegu/datascience/foremans/lw4dvar-torch` on
 `sunspot-uan-0001`.
 
@@ -93,9 +93,9 @@ Status snapshot: **2026-11-12 18:37 UTC**. The verified target is the
   checkpoint stride 1 and wrote
   `output/test_ace2_240cycle_pilot_retry/2015-01-01T00_optimal_inputs_120h_50it.pkl`.
 - Main chunk job `12483402` (`lw4dvar-ace2-240a`) was running on
-  `x1921c0s5b0n0` at the snapshot. It had written 34 cycle checkpoints through
-  `2015-01-05T06`; the log showed epoch 35 of the next six-hour cycle. Its
-  requested walltime is 23 hours.
+  `x1921c0s5b0n0` at the snapshot, with 3:20:38 elapsed of its requested
+  23-hour walltime. It had written 52 cycle checkpoints through
+  `2015-01-07T12`; the log showed epoch 2 of the next six-hour cycle.
 - Continuation job `12483405` (`lw4dvar-ace2-240b`) is held with
   `depend=afterok:12483402`, so PBS will release it only if chunk A succeeds.
 - The earlier stride-2 attempt failed with Intel XPU
