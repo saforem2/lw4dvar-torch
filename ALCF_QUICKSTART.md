@@ -33,10 +33,9 @@ The test downloads a 22 MB fixture checkpoint when needed, runs one 24-hour
 window for 50 epochs, checks that the cost decreases, and verifies the
 analysis and forecast files. It is a mini fixture, not the full ACE2 workload.
 
-The full solver entry point is `long_window_4dvar.py` (there is no `main.py`).
-Run it with a config and the full checkpoint, forcing, initial-condition and
-verification cache, and surface-pressure observations staged in readable
-storage:
+The full solver entry point is `long_window_4dvar.py`. Run it with a config
+and the full checkpoint, forcing, initial-condition and verification cache,
+and surface-pressure observations staged in readable storage:
 
 ```bash
 ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- \

@@ -28,6 +28,14 @@ Sirius needs [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged fo
 
 These are hardware smoke and mini-fixture results. The full-sized 240-cycle ACE2 run has not run on any system.
 
+## Tests and model coverage
+
+- `make check`: Ruff passed; `102 passed` on macOS arm64 with Python 3.12 and PyTorch 2.7.1. This includes the device resolver, solver math, grid-interpolator choices for AIFS, FCN3, Aurora, SFNO, and ACE2, and loading every tracked `config_test_*.yml`.
+- `make check-ace2`: `1 passed in 60.08s` on CPU with the pinned mini checkpoint, one 24-hour window, and 50 epochs.
+- The tracked configs cover AIFS 1.1/2.0/3, FCN3, ACE2, SFNO, Aurora, GraphCast, and NGCM. In the validations recorded here, ACE2 is the only backend with a checkpoint-backed forward/solver run. The other backends have config and shared-grid coverage, not forward runs.
+
+The model submodules are not initialized in this checkout. The full test configs also point at external checkpoint and cache paths, so additional backend runs need checkpoints and caches staged in readable storage first. The repository CI pin `torch==2.7.1+cpu` has no macOS arm64 wheel; the local check used PyTorch 2.7.1 from PyPI in a temporary `uv` environment. The checked-in requirements were unchanged.
+
 ## Run evidence
 
 Each completed PBS job ended with `job_state = F` and `Exit_status = 0`.
