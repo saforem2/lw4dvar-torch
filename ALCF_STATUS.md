@@ -67,7 +67,8 @@ Logs remain on their respective systems:
 - Sunspot XPU smoke: `$HOME/lw4dvar-xpu-final.o12483304`
 - Sirius CUDA smoke: `$HOME/tmp/lw4dvar-torch-sirius-6a987e5/lw4dvar-sirius-smoke.o33440`
 - Polaris CUDA smoke: `$HOME/tmp/lw4dvar-torch-polaris-6a987e5/lw4dvar-cuda-smoke.o7838743`
+- New Sunspot validation logs: `/tegu/datascience/foremans/lw4dvar-validation-logs/` (`12483369`, `12483370`, `12483373`).
 
 ## Full-model pilot
 
-The historical 240-cycle configuration depends on a 2015 surface-pressure observation archive under another project's storage. This account cannot read that path, so the data must be staged at a readable location before the full run. The Polaris mini-case submission also needs a queue slot; the last attempt was rejected at the per-user queued-job limit.
+The historical 240-cycle configuration depends on a 2015 surface-pressure observation archive under another project's storage. A fresh Sunspot check found `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs` unreadable, so the data must be staged at a readable location before the full run. The Polaris mini-case submission also needs a queue slot; the last attempt was rejected at the per-user queued-job limit.
