@@ -92,11 +92,11 @@ def make_figure() -> None:
     fig, (ax_loss, ax_rmse) = plt.subplots(
         1, 2, figsize=(10.2, 4.0), gridspec_kw={"width_ratios": [1.45, 1.0]}
     )
-    fig.suptitle("ACE2 on Sunspot: two-cycle real-data canary", y=0.98, fontsize=12)
+    fig.suptitle("ACE2 4D-Var on Sunspot: two-cycle canary", y=0.98, fontsize=12)
     fig.text(
         0.5,
         0.925,
-        "PBS 12483476 · 2 cycles · 10 epochs · 120 h windows · exit 0",
+        "Jan 1 00Z and 06Z · 120 h window · 10 epochs per cycle · PBS 12483476 exit 0",
         ha="center",
         fontsize=8.5,
         color="#4b5563",
@@ -105,24 +105,24 @@ def make_figure() -> None:
     for cycle in ("2015-01-01T00", "2015-01-01T06"):
         values = losses[cycle]
         epochs = range(1, len(values) + 1)
+        relative = [(value / values[0] - 1) * 100 for value in values]
         pct = 100 * (values[-1] / values[0] - 1)
         ax_loss.plot(
             epochs,
-            values,
+            relative,
             color=COLORS[cycle],
             marker="o",
             markersize=3.5,
             linewidth=1.7,
             label=f"{LABELS[cycle]} ({pct:.1f}%)",
         )
-    ax_loss.set_title("A  Saved objective by optimizer epoch", loc="left", pad=10)
+    ax_loss.set_title("A  Objective change within each cycle", loc="left", pad=10)
     ax_loss.set_xlabel("Optimizer epoch")
-    ax_loss.set_ylabel("Objective loss (×10³)")
+    ax_loss.set_ylabel("Change from epoch 1 (%)")
     ax_loss.set_xlim(0.7, 10.3)
     ax_loss.set_xticks(range(1, 11))
-    ax_loss.set_ylim(480_000, 530_000)
-    ax_loss.set_yticks([480_000, 490_000, 500_000, 510_000, 520_000, 530_000])
-    ax_loss.set_yticklabels(["480", "490", "500", "510", "520", "530"])
+    ax_loss.set_ylim(-5.2, 0.7)
+    ax_loss.set_yticks([-5, -4, -3, -2, -1, 0])
     ax_loss.grid(axis="y", color="#d8dee8", linewidth=0.7)
     ax_loss.legend(frameon=False, loc="lower left")
 
@@ -140,10 +140,10 @@ def make_figure() -> None:
             color="#374151",
         )
     ax_rmse.axvline(0, color="#6b7280", linestyle="--", linewidth=0.9, zorder=0)
-    ax_rmse.set_title("B  Change in +6 h global Z500 RMSE", loc="left", pad=10)
-    ax_rmse.set_xlabel("Analysis − control (m; negative is lower error)")
+    ax_rmse.set_title("B  Global 500 hPa height error at +6 h", loc="left", pad=10)
+    ax_rmse.set_xlabel("Analysis − control RMSE (m; negative is lower error)")
     ax_rmse.set_yticks(positions)
-    ax_rmse.set_yticklabels(["Valid 06Z", "Valid 12Z"])
+    ax_rmse.set_yticklabels(["Cycle 1: 00Z -> 06Z", "Cycle 2: 06Z -> 12Z"])
     ax_rmse.set_xlim(-0.07, 0.035)
     ax_rmse.set_xticks([-0.06, -0.04, -0.02, 0.00, 0.02])
     ax_rmse.grid(axis="x", color="#d8dee8", linewidth=0.7)
@@ -151,7 +151,7 @@ def make_figure() -> None:
     fig.text(
         0.5,
         0.015,
-        "Lower RMSE is better. Ten epochs are an early optimization check, not a convergence result.",
+        "Objective is not forecast error. These small RMSE changes do not establish a useful forecast gain.",
         ha="center",
         fontsize=8,
         color="#4b5563",

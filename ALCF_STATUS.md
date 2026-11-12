@@ -49,11 +49,25 @@ each. Sunspot PBS job `12483476` completed on `x1922c5s3b0n0` with
 wrote 20 NetCDF/Pickle/diagnostic artifacts (about 1.3 GB) under
 `output/test_ace2_2cycle_10it_sunspot/`.
 
+Each cycle optimizes ACE2's starting state so its five-day trajectory fits the
+surface-pressure observations better. The first cycle starts at
+`2015-01-01T00`; the analysis is advanced six hours and the second cycle starts
+at `2015-01-01T06`. Ten optimizer epochs run per cycle, instead of 50 in the full config.
+The objective combines the assimilation costs; it is not a forecast-error
+score, and its absolute value differs by cycle because each cycle has different
+states and observations.
+
 At +6 hours the global Z500 RMS error changed from `10.20 m` to `10.16 m`; at
 +12 hours it changed from `11.96 m` to `11.93 m`. The logged loss moved from
 `525647.8` to `518862.4` for cycle 1 and from `517137.2` to `493581.7` for
 cycle 2. These 10-epoch cycles are a quick hardware and pipeline check, not a
 converged substitute for the 50-epoch full experiment.
+
+Panel A shows each cycle's objective change from its own epoch-1 value; compare
+the within-cycle slopes, not the absolute objective between cycles. Panel B
+compares global 500 hPa height RMSE at each cycle's +6-hour verification time,
+before and after assimilation. The changes are `-0.04 m` and `-0.03 m`; this
+two-cycle canary does not establish a useful forecast improvement.
 
 ![ACE2 Sunspot canary loss traces and Z500 error changes](figures/ace2_sunspot_2cycle_10it.png)
 
