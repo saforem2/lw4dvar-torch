@@ -5,8 +5,8 @@
 - Fork: [`saforem2/lw4dvar-torch`](https://github.com/saforem2/lw4dvar-torch)
 - Branch: [`feature/ezpz-device-agnostic`](https://github.com/saforem2/lw4dvar-torch/tree/feature/ezpz-device-agnostic)
 - Sunspot-tested code: [`ddcc279`](https://github.com/saforem2/lw4dvar-torch/commit/ddcc279bf803803a991ff4deaeddab1a7c39a027), “Generalize device selection with ezpz”. SHA-256 checks of all 50 changed paths matched between the tested Sunspot staging tree and that commit.
-- Current branch includes [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e), which adds the Sirius setup used below.
-- This report now records both Sirius and Polaris CUDA smoke results.
+- Current branch: [`29507ce`](https://github.com/saforem2/lw4dvar-torch/commit/29507ced178faefb75c222fe2775e74d9b9b6384), including the ALCF quick start and `uv` dependency lock.
+- Sirius ran the mini ACE2 solver test on CUDA. Polaris ran the CUDA forward/backward smoke; its mini ACE2 solver test remains queued behind the per-user queue limit.
 - No pull request has been opened.
 
 ## Changes
@@ -114,7 +114,31 @@ torch=2.14.0 cuda=13.0
 device=cuda torch=2.14.0 cuda=13.0 loss=0.491877 grad_norm=0.176259
 ```
 
-This run exercised `resolve_device`, CUDA forward/backward, finite gradients, and device synchronization. It did not run the ACE2 solver on Sirius. The job used the pushed branch at commit [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e), with `ezpz` submit client commit `3aac71153d96c1ec48bd0e7b96814481f29752ef`. Its log is `$HOME/tmp/lw4dvar-torch-sirius-6a987e5/lw4dvar-sirius-smoke.o33440` on Sirius.
+This run exercised `resolve_device`, CUDA forward/backward, finite gradients, and device synchronization. The job used the pushed branch at commit [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e), with `ezpz` submit client commit `3aac71153d96c1ec48bd0e7b96814481f29752ef`. Its log is `$HOME/tmp/lw4dvar-torch-sirius-6a987e5/lw4dvar-sirius-smoke.o33440` on Sirius.
+
+## Sirius mini ACE2 solver proof
+
+PBS job `33446.sirius-pbs-0001.hsn.cm.sirius.alcf.anl.gov` ran the mini ACE2 test on a Sirius A100 node, `x3200c0s13b0n0`. `qstat -xf` recorded `job_state = F`, `Exit_status = 0`, and `resources_used.walltime = 00:01:05`. The job loaded Sirius's `conda/2026-10-09` CUDA 13.0 stack. PyTorch reported CUDA available, and the test completed:
+
+```text
+torch 2.14.0 cuda 13.0 cudnn 92600 available True
+1 passed in 33.62s
+launcher exit 0
+```
+
+This used the mini checkpoint: one 24-hour window and 50 epochs. It does not prove the full 240-cycle ACE2 run. The pinned ALCF requirements install used `uv pip install --no-deps` to preserve the site PyTorch build.
+
+## Run the mini case on an ALCF system
+
+The current commands are in [`ALCF_QUICKSTART.md`](ALCF_QUICKSTART.md). From a Sunspot, Polaris, Sirius, or Aurora login shell:
+
+```bash
+git clone --branch feature/ezpz-device-agnostic --single-branch https://github.com/saforem2/lw4dvar-torch.git
+cd lw4dvar-torch
+source <(curl -fsSL https://ezpz.cool/utils.sh) && ezpz_setup_env
+uv pip install --no-cache --link-mode=copy --no-deps "git+https://github.com/saforem2/ezpz" -r requirements-alcf-ace2.txt
+LW4DVAR_DEVICE=auto ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- python3 -m pytest -q tests/ace2/test_ace2_mini.py
+```
 
 ## Reproduce the Sirius CUDA smoke
 
@@ -183,4 +207,4 @@ uv run --python 3.12 --project "$EZPZ_REPO" ezpz submit \
 
 ## Scope
 
-The Sunspot XPU smoke, Sunspot mini ACE2 solver, Sirius CUDA smoke, and Polaris CUDA smoke passed. A production-scale 4D-Var workload and full backend runs on XPU or CUDA have not been validated.
+The Sunspot XPU smoke, Sunspot mini ACE2 solver, Sirius CUDA smoke, Sirius mini ACE2 solver, and Polaris CUDA smoke passed. The mini ACE2 solver has not yet run on Polaris. A production-scale 4D-Var workload and full backend runs on XPU or CUDA have not been validated.
