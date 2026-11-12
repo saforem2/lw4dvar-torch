@@ -1,8 +1,8 @@
 # ALCF quick start
 
-After [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merges, use the
-same setup on Sunspot, Polaris, Sirius, and Aurora. Sirius currently needs that
-fix to select its CUDA 13 site stack.
+Use the same setup on Aurora, Sunspot, Polaris, and Sirius. Sirius needs
+[ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged first so setup
+selects its CUDA 13 site stack.
 
 ```bash
 git clone --branch feature/ezpz-device-agnostic --single-branch \
@@ -18,7 +18,11 @@ environment. The install uses `uv`; `--no-deps` keeps it from replacing the
 site-provided PyTorch build. `requirements-alcf-ace2.txt` supplies the solver
 and mini-test dependencies.
 
-Run the bundled mini ACE2 4D-Var case:
+Run the bundled mini ACE2 4D-Var case inside a one-node compute allocation.
+`ezpz launch` handles the process launch; it does not request nodes. From a
+login shell, request an allocation with `ezpz submit` or the site's PBS
+workflow. Queue, account, and filesystem values depend on the machine and
+project.
 
 ```bash
 LW4DVAR_DEVICE=auto ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- \
