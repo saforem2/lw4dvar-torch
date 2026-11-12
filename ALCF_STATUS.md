@@ -38,6 +38,22 @@ The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its 
 
 Other model configs still point at external checkpoints and caches, so additional backend runs need those assets staged in readable storage. The test-suite result above is from ALCF compute nodes; the earlier macOS run is not accelerator validation.
 
+## Short real-data ACE2 canary
+
+`config_ace2_2cycle_10it.yml` is a reduced multi-cycle run that keeps the same
+ACE2 checkpoint, 120-hour window, real surface-pressure observations, and
+six-hour cycling as the full run, but runs two cycles for 10 optimizer epochs
+each. Sunspot PBS job `12483476` completed on `x1922c5s3b0n0` with
+`Exit_status = 0` in 3:50. It wrote 20 NetCDF/Pickle/diagnostic artifacts
+(about 1.3 GB) under
+`output/test_ace2_2cycle_10it_sunspot/`.
+
+At +6 hours the global Z500 RMS error changed from `10.20 m` to `10.16 m`; at
++12 hours it changed from `11.96 m` to `11.93 m`. The logged loss moved from
+`525647.8` to `518862.4` for cycle 1 and from `517137.2` to `493581.7` for
+cycle 2. These 10-epoch cycles are a quick hardware and pipeline check, not a
+converged substitute for the 50-epoch full experiment.
+
 ## Run evidence
 
 Each completed successful PBS job ended with `job_state = F` and `Exit_status = 0`. The ACE2/XPU attempt above ended with `Exit_status = 1` for the documented FME device mismatch.
@@ -79,7 +95,7 @@ Logs remain on their respective systems:
 
 ## Full ACE2 240-cycle run on Sunspot
 
-Status snapshot: **2026-11-12 19:42 UTC**. The verified target is the
+Status snapshot: **2026-11-12 20:21 UTC**. The verified target is the
 `datascience` checkout at `/tegu/datascience/foremans/lw4dvar-torch` on
 `sunspot-uan-0001`.
 
@@ -93,9 +109,9 @@ Status snapshot: **2026-11-12 19:42 UTC**. The verified target is the
   checkpoint stride 1 and wrote
   `output/test_ace2_240cycle_pilot_retry/2015-01-01T00_optimal_inputs_120h_50it.pkl`.
 - Main chunk job `12483402` (`lw4dvar-ace2-240a`) was running on
-  `x1921c0s5b0n0` at the snapshot, with 3:20:38 elapsed of its requested
-  23-hour walltime. It had written 52 cycle checkpoints through
-  `2015-01-07T12`; the log showed epoch 2 of the next six-hour cycle.
+  `x1921c0s5b0n0` at the snapshot, with about 3:59 elapsed of its requested
+  23-hour walltime. It had written 31 cycle outputs through `2015-01-08T18`;
+  the log showed epoch 6 of the next six-hour cycle.
 - Continuation job `12483405` (`lw4dvar-ace2-240b`) is held with
   `depend=afterok:12483402`, so PBS will release it only if chunk A succeeds.
 - The earlier stride-2 attempt failed with Intel XPU

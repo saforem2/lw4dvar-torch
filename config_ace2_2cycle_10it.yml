@@ -1,0 +1,46 @@
+# Small real-data Sunspot XPU experiment: two 6-hourly cycles with the same
+# 120-hour ACE2 window and ISPD observations as the full run, but 10 optimizer
+# epochs per cycle instead of 50. Outputs go to a separate experiment folder.
+exp:
+  model_backend: ace2
+
+  nhrs_back: 48
+  restart: False
+  rpath: './output/test_ace2_240cycle_pilot_retry/'
+  obspath: './psobs'
+  nobs_max: 15000
+  ic_suffix: '120h_10it'
+  sdate: '2015-01-01T00'
+  n_init: 2
+  dt_init: 6
+  save_levs: [1000, 850, 500, 250, 50]
+  cycle: True
+  exp_name: 'test_ace2_2cycle_10it_sunspot'
+
+  path_model: './backends/ace2/ACE2-ERA5/'
+  model_name: 'ace2_era5_ckpt.tar'
+  device: 'auto'
+  path_output: './output/'
+  ic_cache: './ic_cache_ace2/'
+  print_every: 10
+  oberrstart: -1
+  oberrdeltaperday: 0
+  checkpoint_stride: 1
+  control_variables: [air_temperature, specific_total_water, eastward_wind, northward_wind, PRESsfc, surface_temperature, TMP2m, Q2m, UGRD10m, VGRD10m]
+  jc_ps_weight: 32
+
+windows:
+  '5':
+    n_verif: 20
+    dt_verif: 6
+    dt_obs: 6
+    learn_rate: 1.0e-3
+    weight_decay: 1.0e-3
+    max_epoch: 10
+    warmup_steps: 2
+    start_factor: 0.1
+    end_factor: 1
+    bg_check: 4.
+    zthresh: 500.
+    zconst: 0.003
+    suffix: ''
