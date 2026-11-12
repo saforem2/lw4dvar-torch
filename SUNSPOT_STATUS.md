@@ -1,4 +1,4 @@
-# `lw4dvar-torch` Sunspot status
+# `lw4dvar-torch` hardware status
 
 ## Git
 
@@ -6,6 +6,7 @@
 - Branch: [`feature/ezpz-device-agnostic`](https://github.com/saforem2/lw4dvar-torch/tree/feature/ezpz-device-agnostic)
 - Sunspot-tested code: [`ddcc279`](https://github.com/saforem2/lw4dvar-torch/commit/ddcc279bf803803a991ff4deaeddab1a7c39a027), “Generalize device selection with ezpz”. SHA-256 checks of all 50 changed paths matched between the tested Sunspot staging tree and that commit.
 - Current branch includes [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e), which adds the Sirius setup used below.
+- This report now records both Sirius and Polaris CUDA smoke results.
 - No pull request has been opened.
 
 ## Changes
@@ -117,13 +118,18 @@ This run exercised `resolve_device`, CUDA forward/backward, finite gradients, an
 
 ## Reproduce the Sirius CUDA smoke
 
-Clone the branch on Sirius and submit from a machine with the `ezpz` checkout available to `uv` and an SSH alias named `sirius`:
+Clone the branch from a Sirius login shell:
 
 ```bash
 git clone --branch feature/ezpz-device-agnostic \
   https://github.com/saforem2/lw4dvar-torch.git \
   "$HOME/tmp/lw4dvar-torch-sirius"
-SIRIUS_REPO="$HOME/tmp/lw4dvar-torch-sirius"
+```
+
+Then submit from a machine with the `ezpz` checkout available to `uv` and an SSH alias named `sirius`. Set `SIRIUS_REPO` to the matching absolute path on Sirius:
+
+```bash
+SIRIUS_REPO="/home/foremans/tmp/lw4dvar-torch-sirius"
 EZPZ_REPO="/path/to/saforem2/ezpz"
 
 uv run --python 3.12 --project "$EZPZ_REPO" ezpz submit \
@@ -136,6 +142,45 @@ uv run --python 3.12 --project "$EZPZ_REPO" ezpz submit \
 
 `test_scripts/sirius_ezpz_setup.sh` loads Sirius's `conda/2026-10-09` module, then runs `ezpz_setup_env`. That setup creates its venv with `uv` and inherits the site Torch package; it does not install packages with `pip`. The explicit conda module selects the current Sirius Python/Torch stack. PBS requires `--account datascience` for this queue.
 
+## Polaris CUDA proof
+
+The corrected Polaris smoke completed as job `7838743.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov`. PBS recorded `job_state = F`, `Exit_status = 0`, and `resources_used.walltime = 00:01:04`. It ran on `x3005c0s19b1n0`; PBS identifies that Polaris node as having four A100 GPUs.
+
+The application output was:
+
+```text
+device=cuda torch=2.8.0+cu128 cuda=12.8 loss=0.491877 grad_norm=0.176259
+```
+
+The run used the pushed branch at commit [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e). It exercised the CUDA device resolver, forward/backward, finite gradients, and synchronization. The first attempt exited before the test because its working directory did not contain `test_scripts/`; the successful retry submitted from the repository root. The output log is `$HOME/tmp/lw4dvar-torch-polaris-6a987e5/lw4dvar-cuda-smoke.o7838743` on Polaris.
+
+## Reproduce the Polaris CUDA smoke
+
+Clone the tested branch from a Polaris login shell:
+
+```bash
+git clone --branch feature/ezpz-device-agnostic \
+  https://github.com/saforem2/lw4dvar-torch.git \
+  "$HOME/tmp/lw4dvar-torch-polaris"
+```
+
+Then submit from a machine with an `ezpz` source checkout available to `uv` and an SSH alias named `polaris`. Set `POLARIS_REPO` to the matching absolute path on Polaris:
+
+```bash
+POLARIS_REPO="/home/foremans/tmp/lw4dvar-torch-polaris"
+EZPZ_REPO="/path/to/saforem2/ezpz"
+
+uv run --python 3.12 --project "$EZPZ_REPO" ezpz submit \
+  --remote polaris --backend ssh --workdir "$POLARIS_REPO" \
+  --job-name lw4dvar-cuda-smoke --nodes 1 --queue capacity \
+  --time 00:10:00 --account AuroraGPT --filesystems home:eagle \
+  --env-setup-script "$POLARIS_REPO/test_scripts/polaris_ezpz_setup.sh" \
+  --no-launch -- \
+  /opt/cray/pe/python/3.12.12/bin/python3.12 test_scripts/smoke_polaris_cuda.py
+```
+
+`test_scripts/polaris_ezpz_setup.sh` uses the Cray Python 3.12 runtime with the existing CUDA Torch site-packages on `PYTHONPATH`. This smoke installs no Python packages. The caller-side `ezpz submit` client runs under `uv`.
+
 ## Scope
 
-The XPU smoke and mini ACE2 test passed. A production-scale 4D-Var workload and full backend runs on XPU have not been validated.
+The Sunspot XPU smoke, Sunspot mini ACE2 solver, Sirius CUDA smoke, and Polaris CUDA smoke passed. A production-scale 4D-Var workload and full backend runs on XPU or CUDA have not been validated.
