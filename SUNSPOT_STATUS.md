@@ -4,8 +4,8 @@
 
 - Fork: [`saforem2/lw4dvar-torch`](https://github.com/saforem2/lw4dvar-torch)
 - Branch: [`feature/ezpz-device-agnostic`](https://github.com/saforem2/lw4dvar-torch/tree/feature/ezpz-device-agnostic)
-- Commit: [`ddcc279`](https://github.com/saforem2/lw4dvar-torch/commit/ddcc279bf803803a991ff4deaeddab1a7c39a027), “Generalize device selection with ezpz”
-- The working tree is clean. SHA-256 checks of all 50 changed paths matched between the tested Sunspot staging tree and commit `ddcc279`.
+- Sunspot-tested code: [`ddcc279`](https://github.com/saforem2/lw4dvar-torch/commit/ddcc279bf803803a991ff4deaeddab1a7c39a027), “Generalize device selection with ezpz”. SHA-256 checks of all 50 changed paths matched between the tested Sunspot staging tree and that commit.
+- Current branch includes [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e), which adds the Sirius setup used below.
 - No pull request has been opened.
 
 ## Changes
@@ -100,6 +100,41 @@ qstat -xf JOB_ID | egrep 'Job Id:|job_state =|Exit_status =|resources_used.wallt
 ```
 
 The earlier general unit run reported `101 passed` and one ACE2 skip before the ACE2 dependencies were installed.
+
+## Sirius CUDA proof
+
+The hardware smoke also completed on Sirius. PBS recorded job `33440.sirius-pbs-0001.hsn.cm.sirius.alcf.anl.gov` as `job_state = F`, `Exit_status = 0`, and `resources_used.walltime = 00:00:17`. It ran on `x3200c0s13b0n0`; PBS identifies that host as a Sirius node with four A100 GPUs.
+
+The application output was:
+
+```text
+Python 3.13.15
+torch=2.14.0 cuda=13.0
+device=cuda torch=2.14.0 cuda=13.0 loss=0.491877 grad_norm=0.176259
+```
+
+This run exercised `resolve_device`, CUDA forward/backward, finite gradients, and device synchronization. It did not run the ACE2 solver on Sirius. The job used the pushed branch at commit [`6a987e5`](https://github.com/saforem2/lw4dvar-torch/commit/6a987e5c4fbcd9784b53ed795df06b3fdad0285e), with `ezpz` submit client commit `3aac71153d96c1ec48bd0e7b96814481f29752ef`. Its log is `$HOME/tmp/lw4dvar-torch-sirius-6a987e5/lw4dvar-sirius-smoke.o33440` on Sirius.
+
+## Reproduce the Sirius CUDA smoke
+
+Clone the branch on Sirius and submit from a machine with the `ezpz` checkout available to `uv` and an SSH alias named `sirius`:
+
+```bash
+git clone --branch feature/ezpz-device-agnostic \
+  https://github.com/saforem2/lw4dvar-torch.git \
+  "$HOME/tmp/lw4dvar-torch-sirius"
+SIRIUS_REPO="$HOME/tmp/lw4dvar-torch-sirius"
+EZPZ_REPO="/path/to/saforem2/ezpz"
+
+uv run --python 3.12 --project "$EZPZ_REPO" ezpz submit \
+  --remote sirius --backend ssh --workdir "$SIRIUS_REPO" \
+  --job-name lw4dvar-sirius-smoke --nodes 1 --queue workq \
+  --time 00:10:00 --account datascience --filesystems home \
+  --env-setup-script "$SIRIUS_REPO/test_scripts/sirius_ezpz_setup.sh" \
+  --no-launch -- python3 test_scripts/smoke_polaris_cuda.py
+```
+
+`test_scripts/sirius_ezpz_setup.sh` loads Sirius's `conda/2026-10-09` module, then runs `ezpz_setup_env`. That setup creates its venv with `uv` and inherits the site Torch package; it does not install packages with `pip`. The explicit conda module selects the current Sirius Python/Torch stack. PBS requires `--account datascience` for this queue.
 
 ## Scope
 
