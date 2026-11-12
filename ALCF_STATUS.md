@@ -26,7 +26,7 @@ Sirius needs [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged fo
 | Polaris | 4× A100, CUDA 12.8 | CUDA forward/backward smoke passed. Mini ACE2 solver test has not run; the per-user queue limit blocked submission. | PBS job `7838743` |
 | Aurora | Intel XPU | Not validated in this effort. | — |
 
-The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. The full-sized 240-cycle ACE2 4D-Var experiment has not run on any system.
+The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. A full-sized 240-cycle ACE2 4D-Var experiment is now in progress on Sunspot; this is not yet a completed-run result.
 
 ## Tests and model coverage
 
@@ -77,7 +77,31 @@ Logs remain on their respective systems:
 - Polaris CUDA smoke: `$HOME/tmp/lw4dvar-torch-polaris-6a987e5/lw4dvar-cuda-smoke.o7838743`
 - New Sunspot validation logs: `/tegu/datascience/foremans/lw4dvar-validation-logs/` (`12483369`, `12483370`, `12483373`).
 
-## Full-model pilot
+## Full ACE2 240-cycle run on Sunspot
+
+Status snapshot: **2026-11-12 18:37 UTC**. The verified target is the
+`datascience` checkout at `/tegu/datascience/foremans/lw4dvar-torch` on
+`sunspot-uan-0001`.
+
+- The `ic_cache_ace2/` cache contains 242 NetCDF files: the 2014-12-30 initial
+  condition and 241 six-hourly verification states from 2015-01-01 00Z through
+  2015-03-02 00Z. Total cache size is 138,335,341 bytes. Its checked-in
+  `MANIFEST.sha256` file is present (SHA-256
+  `6dd62bffcc923c5cd82471211532a6a30da0b0235f63688df7f16a7b402146b1`).
+- Pilot job `12483400` (`lw4dvar-ace2-pilot`) finished on `x1921c0s5b0n0`
+  with PBS `Exit_status = 0` in 8:13. It ran a five-day, 50-epoch cycle with
+  checkpoint stride 1 and wrote
+  `output/test_ace2_240cycle_pilot_retry/2015-01-01T00_optimal_inputs_120h_50it.pkl`.
+- Main chunk job `12483402` (`lw4dvar-ace2-240a`) was running on
+  `x1921c0s5b0n0` at the snapshot. It had written 34 cycle checkpoints through
+  `2015-01-05T06`; the log showed epoch 35 of the next six-hour cycle. Its
+  requested walltime is 23 hours.
+- Continuation job `12483405` (`lw4dvar-ace2-240b`) is held with
+  `depend=afterok:12483402`, so PBS will release it only if chunk A succeeds.
+- The earlier stride-2 attempt failed with Intel XPU
+  `UR_RESULT_ERROR_OUT_OF_RESOURCES`; the current run uses checkpoint stride
+  1. The 240-cycle experiment remains **in progress** until both chunks finish
+  with zero exit status and the expected outputs are verified.
 
 The old Polaris config points to `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; that path returns `Permission denied` for this account. The generic ACE2 config used to point to `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs`, which is not readable from Sunspot. It now reads `./psobs`; a Sunspot symlink points that relative path at the staged ISPD data.
 
@@ -103,5 +127,5 @@ XPU smoke, the matching 2020 inputs were downloaded from the public
 `ed168a35c9e675fee073578f687c6a85bdd158f10dc7b641afa24f9e5eeee2ae`.
 
 ACE2 now runs on Sunspot XPU through the compatibility adapter described
-above. The 240-cycle 4D-Var experiment still needs the initial-condition and
-verification cache (`ic_cache_ace2`), which is not staged yet.
+above. The initial-condition and verification cache is staged and used by the
+240-cycle run described above.

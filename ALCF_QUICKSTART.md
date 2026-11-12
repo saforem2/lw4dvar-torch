@@ -74,8 +74,10 @@ The smoke checks real initial-state decoding, a 4-step forecast, finite and
 matching latent gradients with and without checkpointing, an AdamW update,
 and 4- and 20-step forward/backward timings. Job `12483387` passed on
 `x1922c5s4b0n0`: 4-step forward/backward took 1.64 s, 20 steps took 9.27 s,
-with 10.08 GiB peak XPU allocation. This is model-level validation; the full
-240-cycle observation-assimilation run still needs `ic_cache_ace2`.
+with 10.08 GiB peak XPU allocation. This is model-level validation. The full
+240-cycle observation-assimilation experiment is now running on Sunspot XPU;
+its cache, PBS jobs, and current progress are recorded in
+[`ALCF_STATUS.md`](ALCF_STATUS.md).
 
 ## Sunspot compute-node validation
 
