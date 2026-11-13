@@ -1,10 +1,10 @@
 # Running at ALCF (Polaris)
 
 > **Historical, account-specific record.** This page describes the earlier
-> `jwhitaker` Polaris port and its paths, conda environment, and `pip` commands;
-> it is not the current `saforem2` cross-system setup. Use
-> [`ALCF_QUICKSTART.md`](ALCF_QUICKSTART.md) for current instructions and
-> [`ALCF_STATUS.md`](ALCF_STATUS.md) for verified machine and run status.
+> `jwhitaker` Polaris port and its paths, conda environment, and `pip` commands.
+> It is not a current setup guide. Use
+> [`ALCF_QUICKSTART.md`](../ALCF_QUICKSTART.md) for current instructions and
+> [`ALCF_STATUS.md`](../ALCF_STATUS.md) for verified machine and run status.
 
 What it took to port `lw4dvar-torch` from the NOAA RDHPCS Slurm systems
 (`/scratch4/...` envs, H100 nodes) to ALCF Polaris (PBS, 4 x 40 GB A100 per
