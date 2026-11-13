@@ -13,7 +13,7 @@
 # the graphcast-torch env is a venv on the ngcm-sl conda env (JAX 0.11.1)
 # whose .pth file adds ngcm-torch's site-packages (torch 2.7.1+cu128), plus
 # graphcast 0.2 (from /scratch4/BMC/gsienkf/Jeffrey.Whitaker/python/weathernext),
-# jraph, trimesh, rtree and dm-tree (see docs/integrate_jax_backend.md).
+# jraph, trimesh, rtree and dm-tree (see docs/integrate-jax-backend.md).
 #
 # XLA_PYTHON_CLIENT_PREALLOCATE=false: JAX and torch share the GPU; without
 # it JAX reserves 75 % of the device at startup.

@@ -204,7 +204,7 @@ class AIFSModel(forecast_model.LatentForecastModel):
             fp16's narrow dynamic range can overflow when backpropagating
             through a long (here: 24-step/5-day) chained differentiable
             rollout, the exact mechanism root-caused for Aurora's own
-            16-step divergence (see docs/integrate_multiple_backends.md). Confirmed 2026-09-21:
+            16-step divergence (see docs/integrate-multiple-backends.md). Confirmed 2026-09-21:
             aifs-single-1.1 hits this (non-finite `increment.grad`,
             reproduced at 3 different learn_rates/epoch counts on an
             otherwise-identical 5-day-window config that aifs-single-2.0
@@ -226,7 +226,7 @@ class AIFSModel(forecast_model.LatentForecastModel):
             compared against and optimized toward closing the gap to, not
             a target for its own optimization pass. Off by default;
             correctness/speed not yet validated at real production scale
-            when this param was added -- see docs/integrate_multiple_backends.md for whatever the
+            when this param was added -- see docs/integrate-multiple-backends.md for whatever the
             first real test found.
         attention : str, optional
             None (default) keeps the checkpoint's own attention

@@ -18,7 +18,7 @@ or 'aurora') now selects the forecast model at runtime;
 model/grid/IC-fetching modules, imported LAZILY (inside the function that
 needs them, never at this module's top level) so that a process running
 with only one backend's conda env active (`aifs2` vs `fcstnet3` vs `aurora`
--- see docs/integrate_multiple_backends.md; the three envs are not co-installed) never needs the
+-- see docs/integrate-multiple-backends.md; the three envs are not co-installed) never needs the
 other backends' dependencies importable at all.
 
 All three backends implement `forecast_model.LatentForecastModel` with no
@@ -104,7 +104,7 @@ Where the three backends genuinely differ, and how this file handles it:
     `latent_increment` when backpropagating through a 16+ step chained
     rollout, deterministically, from the all-zero initial increment --
     `backends/aurora/aurora_model.py` now defaults to `bfloat16` instead
-    (see docs/integrate_multiple_backends.md "Aurora 16-step divergence: root cause and fix"). Purely
+    (see docs/integrate-multiple-backends.md "Aurora 16-step divergence: root cause and fix"). Purely
     an internal Aurora backend concern, invisible to this file, EXCEPT that
     this file's own `torch.isfinite(loss)` check (before `.backward()`) is
     not sufficient to catch this failure mode by itself -- a finite loss
@@ -289,13 +289,13 @@ def load_config(config_path='config.yml'):
     if backend in ('fcn3', 'sfno') and exp.get('reset_skt_ocean', False):
         raise ValueError(
             "reset_skt_ocean is not supported for the FCN3 backend -- FCN3 has no "
-            "'skt'/'lsm' decode_state field to reset (see docs/integrate_multiple_backends.md)."
+            "'skt'/'lsm' decode_state field to reset (see docs/integrate-multiple-backends.md)."
         )
     if backend == 'fcn3' and exp.get('ps_operator', 'logpinterp') == 'ps':
         raise ValueError(
             "ps_operator='ps' is not supported for the FCN3 backend -- FCN3 has no "
             "native surface-pressure ('sp') decode_state field; use the default "
-            "'logpinterp' instead (see docs/integrate_multiple_backends.md)."
+            "'logpinterp' instead (see docs/integrate-multiple-backends.md)."
         )
     # Aurora DOES have a native 'sp' field (unlike FCN3), so 'ps' might work
     # here in principle -- but _compute_ps_observation_diagnostics_at_time's
@@ -307,7 +307,7 @@ def load_config(config_path='config.yml'):
             "ps_operator='ps' is not yet supported for the Aurora backend -- Aurora "
             "has a native 'sp' field so this may work in principle, but the 'ps' "
             "forward-operator path has only been tested for AIFS so far. Use the "
-            "default 'logpinterp' instead (see docs/integrate_multiple_backends.md)."
+            "default 'logpinterp' instead (see docs/integrate-multiple-backends.md)."
         )
     # ACE2: 'ps_native' is the default operator. Its layers are hybrid
     # sigma-pressure, so 'logpinterp' would have to search a hydrostatically
@@ -1897,7 +1897,7 @@ def compute_optimal(exp, model, input_encoded, verif_ic, psobs_traj, grid_interp
         # rejected as non-finite (`interpolation_failed`) rather than
         # producing a NaN loss -- so the *loss* itself looks deceptively
         # finite and lower than before, and the corrupted increment gets
-        # saved as "new best" rather than caught here. See docs/integrate_multiple_backends.md
+        # saved as "new best" rather than caught here. See docs/integrate-multiple-backends.md
         # "Aurora 16-step divergence" for the full root-cause writeup.
         #
         # Originally a skip-and-continue (warn, zero the grad, proceed to

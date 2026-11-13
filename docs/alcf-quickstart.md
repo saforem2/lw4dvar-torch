@@ -37,7 +37,7 @@ These asset-fetch commands work on any Linux system with Git LFS, `curl`, and
 `sha256sum`. The released 1° ACE2 checkpoint, 2020 initial condition, and
 matching forcing were exercised on a Sunspot XPU compute node; the two 2020
 inputs are public LFS files from `allenai/ACE2-ERA5`. Their SHA-256 values are
-recorded in [`ALCF_STATUS.md`](ALCF_STATUS.md). A fresh clone needs the
+recorded in [`alcf-status.md`](alcf-status.md). A fresh clone needs the
 submodule and these three files. The commands below download each file to a
 temporary name, verify its SHA-256, then install it at the expected path.
 
@@ -81,7 +81,7 @@ and 4- and 20-step forward/backward timings. Job `12483387` passed on
 with 10.08 GiB peak XPU allocation. This is model-level validation. The full
 240-cycle observation-assimilation experiment and its current status are
 recorded in
-[`ALCF_STATUS.md`](ALCF_STATUS.md).
+[`alcf-status.md`](alcf-status.md).
 
 ## Sunspot compute-node validation
 
@@ -99,7 +99,7 @@ uvx --from git+https://github.com/saforem2/ezpz ezpz submit --remote sunspot --n
 The setup script uses `ezpz_setup_env`; the test script installs dependencies
 with `uv` and keeps the site's PyTorch build. The validation recipe now runs
 mini ACE2 with automatic accelerator selection. Recent XPU ACE2 results and
-PBS logs are recorded in [`ALCF_STATUS.md`](ALCF_STATUS.md).
+PBS logs are recorded in [`alcf-status.md`](alcf-status.md).
 
 The full solver entry point is `long_window_4dvar.py`. Run it with a config
 and the full checkpoint, forcing, initial-condition and verification cache,
@@ -109,6 +109,14 @@ and surface-pressure observations staged in readable storage:
 ezpz launch --nproc 1 --nproc_per_node 1 --nhosts 1 -- \
   python3 -u long_window_4dvar.py path/to/ace2_config.yml
 ```
+
+For cycled assimilation, set `cycle: true` when `n_init` is greater than 1;
+configuration validation rejects multi-cycle runs otherwise. ACE2's
+`checkpoint_stride` controls activation checkpoint frequency. The recorded
+five-day ACE2 profile for Polaris's 40 GB A100 uses `checkpoint_stride: 1`;
+stride 2 ran out of memory in that case. Choose the stride for the target
+model and device memory rather than assuming the generic ACE2 config fits
+every accelerator.
 
 On Sunspot, the public ISPD v4.7 observations are staged at
 `/tegu/datascience/foremans/lw4dvar-observations/ispdv4.7/`. The raw files are
@@ -134,5 +142,5 @@ Use the converted `psobs` directory as `obspath`. This source has 9,968
 observations at `2015-01-15T00`, versus 10,821 in the historical archive, so
 results are not an exact reproduction. The original Polaris path is
 `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; it is not readable
-by this account. See [`ALCF_STATUS.md`](ALCF_STATUS.md) for the current cache
+by this account. See [`alcf-status.md`](alcf-status.md) for the current cache
 requirements and hardware results.

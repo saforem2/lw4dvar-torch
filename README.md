@@ -12,11 +12,11 @@ Currently only surface pressure observations are assimilated.
 ## Getting the code
 
 For the shortest ALCF setup and the bundled mini-ACE2 4D-Var run, see
-[ALCF quick start](docs/ALCF_QUICKSTART.md). It uses `ezpz_setup_env`, `uv`, and
+[ALCF quick start](docs/alcf-quickstart.md). It uses `ezpz_setup_env`, `uv`, and
 `ezpz launch`; the mini test selects the detected accelerator when requested.
-Current hardware validation is recorded in [ALCF status](docs/ALCF_STATUS.md).
+Current hardware validation is recorded in [ALCF status](docs/alcf-status.md).
 For Linux NVIDIA systems outside ALCF, see the
-[non-ALCF CUDA quick start](docs/CUDA_QUICKSTART.md). That environment recipe is not
+[non-ALCF CUDA quick start](docs/cuda-quickstart.md). That environment recipe is not
 yet validated on generic CUDA hardware.
 
 The model checkpoints are git submodules pointing at their Hugging Face

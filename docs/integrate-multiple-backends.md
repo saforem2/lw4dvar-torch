@@ -943,7 +943,7 @@ existing `model_backend: aifs` dispatch already treats them as one backend;
   - 5-epoch AdamW optimization ran to completion: `Jtot` 23114 (epoch 1) ->
     19967 (epoch 2, new best) -> 20339 -> 28899 -> 32846 -- the epoch
     3-5 uphill trend is the same untuned-fixed-`lr`-overshoot-past-the-
-    optimum shape this repo's integrate_multiple_backends.md already documents repeatedly for
+    optimum shape this repo's integrate-multiple-backends.md already documents repeatedly for
     other backends' first low-epoch-count smoke tests, not a new failure
     mode.
   - All diagnostic files saved without error (`*_latent_increment_*.pt`,
@@ -2078,7 +2078,7 @@ directly, region by region) and `jc_ps_weight`.
           (global RMS error worse after this untuned optimization: 8.78
           vs. 8.53). Both differences are consistent with the same class
           of GPU kernel-selection floating-point nondeterminism this
-          repo's integrate_multiple_backends.md already documents extensively for bf16 ops
+          repo's integrate-multiple-backends.md already documents extensively for bf16 ops
           elsewhere (kernel fusion changes floating-point operation
           order, shifting results at the last few bits, compounding over
           a 100-epoch/20-step differentiable rollout) -- not a real

@@ -56,7 +56,7 @@ LW4DVAR_DEVICE=auto python -m pytest -q tests/ace2/test_ace2_mini.py
 
 For a full-checkpoint run, stage the ACE2 checkpoint and forcing files, initial
 and verification cache, and `psobs` data on the machine. The download and
-checksum commands in [ALCF quick start](ALCF_QUICKSTART.md#full-ace2-checkpoint-and-sample-inputs)
+checksum commands in [ALCF quick start](alcf-quickstart.md#full-ace2-checkpoint-and-sample-inputs)
 are portable; its PBS submission commands are Sunspot-specific. Run the solver
 as a single process with a config whose asset paths point to those staged files:
 
@@ -64,6 +64,6 @@ as a single process with a config whose asset paths point to those staged files:
 LW4DVAR_DEVICE=auto python -u long_window_4dvar.py path/to/ace2_config.yml
 ```
 
-The CUDA hardware checks recorded in [ALCF status](ALCF_STATUS.md) ran on ALCF
+The CUDA hardware checks recorded in [ALCF status](alcf-status.md) ran on ALCF
 systems; the full ACE2 checkpoint assimilation run is validated on Sunspot
 XPU.

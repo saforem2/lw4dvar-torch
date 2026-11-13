@@ -12,7 +12,7 @@
 # JAX backend (model_backend: ngcm): the ngcm-torch env is a venv layered on
 # the ngcm-sl conda env (JAX 0.11.1, ngcm-train's dependencies) that adds
 # torch 2.7.1+cu128 against the base env's CUDA 12.9 libraries (see
-# docs/integrate_multiple_backends.md). ngcm-train itself (model build/restore)
+# docs/integrate-multiple-backends.md). ngcm-train itself (model build/restore)
 # is put on the path by the backend from exp.ngcm_train_path.
 #
 # XLA_PYTHON_CLIENT_PREALLOCATE=false: JAX and torch share the GPU; without
