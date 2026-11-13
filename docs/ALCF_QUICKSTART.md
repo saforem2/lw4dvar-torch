@@ -79,8 +79,8 @@ matching latent gradients with and without checkpointing, an AdamW update,
 and 4- and 20-step forward/backward timings. Job `12483387` passed on
 `x1922c5s4b0n0`: 4-step forward/backward took 1.64 s, 20 steps took 9.27 s,
 with 10.08 GiB peak XPU allocation. This is model-level validation. The full
-240-cycle observation-assimilation experiment is now running on Sunspot XPU;
-its cache, PBS jobs, and current progress are recorded in
+240-cycle observation-assimilation experiment and its current status are
+recorded in
 [`ALCF_STATUS.md`](ALCF_STATUS.md).
 
 ## Sunspot compute-node validation

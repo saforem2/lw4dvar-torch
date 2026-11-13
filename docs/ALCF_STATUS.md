@@ -26,7 +26,7 @@ Sirius needs [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged fo
 | Polaris | 4× A100, CUDA 12.8 | CUDA forward/backward smoke passed. Mini ACE2 solver test has not run; the per-user queue limit blocked submission. | PBS job `7838743` |
 | Aurora | Intel XPU | Not validated in this effort. | — |
 
-The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. A full-sized 240-cycle ACE2 4D-Var experiment is now in progress on Sunspot; this is not yet a completed-run result.
+The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. The 240-cycle ACE2 4D-Var experiment has completed its first 120 cycles; the continuation is running on Sunspot. It is not yet a completed-run result.
 
 ## Tests and model coverage
 
@@ -124,9 +124,11 @@ Logs remain on their respective systems:
 
 ## Full ACE2 240-cycle run on Sunspot
 
-Status snapshot: **2026-11-12 20:21 UTC**. The verified target is the
+Status snapshot: **2026-11-13 16:08 UTC**. The verified target is the
 `datascience` checkout at `/tegu/datascience/foremans/lw4dvar-torch` on
 `sunspot-uan-0001`.
+
+Run code HEAD: `86326da931c0f54d93beabc6c8b746466439d5d4`.
 
 - The `ic_cache_ace2/` cache contains 242 NetCDF files: the 2014-12-30 initial
   condition and 241 six-hourly verification states from 2015-01-01 00Z through
@@ -134,19 +136,58 @@ Status snapshot: **2026-11-12 20:21 UTC**. The verified target is the
   `MANIFEST.sha256` file is present (SHA-256
   `6dd62bffcc923c5cd82471211532a6a30da0b0235f63688df7f16a7b402146b1`).
 - Pilot job `12483400` (`lw4dvar-ace2-pilot`) finished on `x1921c0s5b0n0`
-  with PBS `Exit_status = 0` in 8:13. It ran a five-day, 50-epoch cycle with
-  checkpoint stride 1 and wrote
-  `output/test_ace2_240cycle_pilot_retry/2015-01-01T00_optimal_inputs_120h_50it.pkl`.
-- Main chunk job `12483402` (`lw4dvar-ace2-240a`) was running on
-  `x1921c0s5b0n0` at the snapshot, with about 3:59 elapsed of its requested
-  23-hour walltime. It had written 31 cycle outputs through `2015-01-08T18`;
-  the log showed epoch 6 of the next six-hour cycle.
-- Continuation job `12483405` (`lw4dvar-ace2-240b`) is held with
-  `depend=afterok:12483402`, so PBS will release it only if chunk A succeeds.
+  with PBS `Exit_status = 0` in 8:13. It completed the first 2015-01-01 00Z
+  cycle, a five-day window with 50 epochs and checkpoint stride 1.
+- Chunk A job `12483402` (`lw4dvar-ace2-240a`) finished with PBS
+  `Exit_status = 0` after 15:16:18. Its log ends with `...JOB COMPLETED...`
+  and contains 119 completed cycles from `2015-01-01T06` through
+  `2015-01-30T18`. With the pilot cycle, the first **120 of 240 cycles** are
+  complete: 6,000 optimizer epochs in total. Outputs are under
+  `output/test_ace2_240cycle_6h_5d_50it/` and
+  `output/test_ace2_240cycle_pilot_retry/`.
+- The original continuation job `12483405` (`lw4dvar-ace2-240b`) did not run.
+  PBS put it on system hold after 21 failed start attempts (`too many failed
+  attempts to run`); it has no application log or exit status.
+- Continuation retry `12483657` was submitted with `ezpz submit` and the
+  existing `afterok:12483402` dependency. PBS reports it running with a
+  23-hour walltime request on `x1921c5s7b0n0`. It resumes from the
+  `2015-01-30T18` analysis and advances to the next six-hour cycle,
+  `2015-01-31T00`.
 - The earlier stride-2 attempt failed with Intel XPU
   `UR_RESULT_ERROR_OUT_OF_RESOURCES`; the current run uses checkpoint stride
-  1. The 240-cycle experiment remains **in progress** until both chunks finish
-  with zero exit status and the expected outputs are verified.
+  1. The full experiment remains **in progress** until the retry finishes with
+  zero exit status and all 240 cycle outputs are verified.
+
+The retrieved PBS stdout logs match the on-Sunspot files by SHA-256:
+pilot `6c3ed2cfadacf7919b4cdc1c4b9f831c53d31ff4e604aae19165463ef6f0114d`;
+chunk A `673783e1488000fc0c2908c3874d94e397a03a72cdce5849bbcc1b48e029d41e`.
+
+The pilot and chunk-A logs contain 120 complete 50-epoch optimization traces
+and paired +6-hour global 500 hPa height RMSE checks. Median objective change
+from epoch 1 to 50 was `-3.28%` per cycle. The median analysis-minus-control
+RMSE change was `+0.00 m`: error was lower in 47 cycles, higher in 52, and
+unchanged in 21. The optimizer reduced its own objective consistently, while
+the short-lead forecast check did not show a consistent improvement.
+
+![ACE2 4D-Var first 120 of 240 Sunspot cycles: objective and +6-hour Z500 error changes](../figures/ace2_sunspot_240cycle_partial.png)
+
+The top panel shows each cycle's objective normalized to its own epoch-1 value;
+the line is the median across cycles and the shaded band is the 10th–90th
+percentile. The bottom panel shows the same-valid-time change in global Z500
+RMSE at +6 h; negative values mean lower error after assimilation. This is a
+partial-run diagnostic, not evidence that the full 240-cycle experiment has
+finished or that forecast skill improved overall. The figure is generated by
+[`plot_ace2_240cycle_partial.py`](../figures/plot_ace2_240cycle_partial.py)
+from the two Sunspot stdout logs. No intermediate CSV is tracked.
+
+Rebuild it from the repository root after fetching those logs from Sunspot:
+
+```bash
+ssh sunspot 'cat /tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-pilot.o12483400' > /tmp/lw4dvar-ace2-pilot.o12483400
+ssh sunspot 'cat /tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-240a.o12483402' > /tmp/lw4dvar-ace2-240a.o12483402
+uv run --no-project --with matplotlib python figures/plot_ace2_240cycle_partial.py \
+  --job-logs /tmp/lw4dvar-ace2-pilot.o12483400 /tmp/lw4dvar-ace2-240a.o12483402
+```
 
 The old Polaris config points to `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; that path returns `Permission denied` for this account. The generic ACE2 config used to point to `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs`, which is not readable from Sunspot. It now reads `./psobs`; a Sunspot symlink points that relative path at the staged ISPD data.
 
