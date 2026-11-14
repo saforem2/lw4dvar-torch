@@ -124,7 +124,7 @@ Logs remain on their respective systems:
 
 ## Full ACE2 240-cycle run on Sunspot
 
-Status snapshot: **2026-11-14 13:13 UTC**. The verified target is the
+Status snapshot: **2026-11-14 14:19 UTC**. The verified target is the
 `datascience` checkout at `/tegu/datascience/foremans/lw4dvar-torch` on
 `sunspot-uan-0001`.
 
@@ -152,10 +152,11 @@ Run code HEAD: `86326da931c0f54d93beabc6c8b746466439d5d4`.
   failed start attempts; it produced no application log or cycle output.
 - Fresh continuation job `12483718` was submitted with `ezpz submit` and the
   `afterok:12483402` dependency. PBS reports it running on `x1921c4s7b0n0`
-  with a 23-hour walltime request. Its log confirms it loaded the
-  `2015-01-30T18` restart, advanced to the `2015-01-31T00` cycle, read the
-  observations, and started optimization. It has not yet completed a new
-  cycle at this snapshot.
+  with a 23-hour walltime request; it had used 1:06:22 at the snapshot. It
+  loaded the `2015-01-30T18` restart and completed eight more cycles through
+  `2015-02-01T18`, bringing the total to **128 of 240 cycles**. Its log has
+  started the `2015-02-02T00` cycle. The run log is
+  `lw4dvar-ace2-240b-r3.o12483718`.
 - The earlier stride-2 attempt failed with Intel XPU
   `UR_RESULT_ERROR_OUT_OF_RESOURCES`; the current run uses checkpoint stride
   1. The full experiment remains **in progress** until job `12483718` finishes
