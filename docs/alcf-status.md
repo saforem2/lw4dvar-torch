@@ -73,10 +73,14 @@ two-cycle canary does not establish a useful forecast improvement.
 
 Figure source: [`plot_ace2_sunspot_canary.py`](../figures/plot_ace2_sunspot_canary.py)
 and [SVG](../figures/ace2_sunspot_2cycle_10it.svg). The script reads the original
-loss files and stdout log on Sunspot. Rebuild from the repository root with:
+loss files and stdout log on Sunspot. It uses the `ambivalent` Matplotlib
+style, `Iosevka25 Condensed`, and transparent backgrounds. Rebuild from the
+repository root with:
 
 ```bash
-uv run --no-project --with matplotlib python figures/plot_ace2_sunspot_canary.py \
+uv run --no-project --with matplotlib \
+  --with "ambivalent @ git+https://github.com/saforem2/ambivalent" \
+  python figures/plot_ace2_sunspot_canary.py \
   --output-dir output/test_ace2_2cycle_10it_sunspot \
   --job-log lw4dvar-ace2-2x10-serial.o12483476
 ```
