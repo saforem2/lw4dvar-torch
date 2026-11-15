@@ -1,8 +1,10 @@
 # ALCF quick start
 
-Use the same setup on Aurora, Sunspot, Polaris, and Sirius. Sirius needs
-[ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged first so setup
-selects its CUDA 13 site stack.
+Use the same setup on Aurora, Sunspot, Polaris, and Sirius. `ezpz_setup_env`
+selects the site-matched accelerator stack; on Sirius it loads
+`conda/2026-10-09` with CUDA `13.0` and cuDNN `9.26`. The Sirius fix in
+[`ezpz` PR #297](https://github.com/saforem2/ezpz/pull/297) is merged as
+[`a52fc51`](https://github.com/saforem2/ezpz/commit/a52fc5130c87defbae96418bc343cc08515639ba).
 
 ```bash
 git clone --branch feature/ezpz-device-agnostic --single-branch \

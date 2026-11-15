@@ -15,7 +15,7 @@ The clone, setup, dependency install, and mini-case command are the same on Auro
 
 Run `ezpz launch` inside a compute allocation. It launches the workload; it does not request nodes. From a login node, use an interactive allocation or `ezpz submit`; PBS queue, account, and filesystem values depend on the system and project.
 
-Sirius needs [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged for the standard setup to select the site-matched CUDA 13 stack. The successful Sirius run used `conda/2026-10-09`.
+Sirius's `ezpz_setup_env` now selects `conda/2026-10-09` with CUDA `13.0` and cuDNN `9.26`. [PR #297](https://github.com/saforem2/ezpz/pull/297) merged as [`a52fc51`](https://github.com/saforem2/ezpz/commit/a52fc5130c87defbae96418bc343cc08515639ba); its setup path passed the mini ACE2 test on Sirius.
 
 ## Hardware results
 
