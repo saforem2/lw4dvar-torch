@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Plot completed-cycle diagnostics from the partial Sunspot ACE2 run.
+"""Plot completed-cycle diagnostics from the full Sunspot ACE2 4D-Var run.
 
-The two source logs are kept on Sunspot. Copy them locally, then pass both
+The three source logs are kept on Sunspot. Copy them locally, then pass their
 paths with ``--job-logs``. This script writes only the PNG and SVG figures;
 it does not create or track intermediate CSV files.
 """
@@ -20,8 +20,8 @@ import numpy as np
 
 
 FIGURES = Path(__file__).resolve().parent
-OUT_PNG = FIGURES / "ace2_sunspot_240cycle_partial.png"
-OUT_SVG = FIGURES / "ace2_sunspot_240cycle_partial.svg"
+OUT_PNG = FIGURES / "ace2_sunspot_240cycle.png"
+OUT_SVG = FIGURES / "ace2_sunspot_240cycle.svg"
 
 mpl.rcParams.update(
     {
@@ -33,7 +33,7 @@ mpl.rcParams.update(
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
         "svg.fonttype": "none",
-        "svg.hashsalt": "lw4dvar-ace2-240cycle-partial-v1",
+        "svg.hashsalt": "lw4dvar-ace2-240cycle-full-v1",
         "axes.spines.top": False,
         "axes.spines.right": False,
         "axes.titleweight": "bold",
@@ -45,7 +45,6 @@ mpl.rcParams.update(
 
 BLUE = "#0072B2"
 GREEN = "#009E73"
-ORANGE = "#D55E00"
 GRID = "#d8dee8"
 
 EPOCH_RE = re.compile(r"INFO - epoch=(\d+), lr=[^,]+, loss=([-+0-9.eE]+)")
@@ -58,7 +57,7 @@ SCORE_RE = re.compile(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--job-logs", nargs="+", type=Path, required=True)
-    parser.add_argument("--expected-cycles", type=int, default=120)
+    parser.add_argument("--expected-cycles", type=int, default=240)
     return parser.parse_args()
 
 
@@ -142,11 +141,11 @@ def make_figure() -> None:
     median_error_change = float(np.median(error_change))
 
     fig, (ax_obj, ax_rmse) = plt.subplots(2, 1, figsize=(10.2, 6.5))
-    fig.suptitle("ACE2 4D-Var on Sunspot: first 120 of 240 cycles", y=0.985, fontsize=12)
+    fig.suptitle("ACE2 4D-Var on Sunspot: 240-cycle run", y=0.985, fontsize=12)
     fig.text(
         0.5,
         0.945,
-        "Jan 1–Jan 30, 2015 · 120 six-hour cycles · 5-day windows · 50 epochs per cycle · PBS 12483400 + 12483402",
+        "Jan 1–Mar 1, 2015 · 240 six-hour cycles · 5-day windows · 50 epochs per cycle · PBS 12483400 + 12483402 + 12483718",
         ha="center",
         fontsize=8.3,
         color="#4b5563",
@@ -190,8 +189,8 @@ def make_figure() -> None:
     ax_rmse.text(
         0.99,
         0.93,
-        f"median {median_error_change:+.2f} m · lower in {improved}/{len(rows)} cycles · "
-        f"higher in {worsened}/{len(rows)} · unchanged {unchanged}",
+        f"median {median_error_change:+.2f} m · lower analysis {improved}/{len(rows)} · "
+        f"higher {worsened}/{len(rows)} · unchanged {unchanged}/{len(rows)}",
         transform=ax_rmse.transAxes,
         ha="right",
         va="top",
@@ -206,7 +205,7 @@ def make_figure() -> None:
     fig.text(
         0.5,
         0.015,
-        "Objective reduction shows optimizer progress, not forecast skill. Z500 compares both forecasts at the same +6 h valid time; this is a partial run.",
+        "Negative Z500 change means lower analysis RMSE. This same-valid-time +6 h diagnostic is not an independent forecast-skill evaluation.",
         ha="center",
         fontsize=8,
         color="#4b5563",

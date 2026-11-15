@@ -26,7 +26,7 @@ Sirius needs [ezpz PR #297](https://github.com/saforem2/ezpz/pull/297) merged fo
 | Polaris | 4× A100, CUDA 12.8 | CUDA forward/backward smoke passed. Mini ACE2 solver test has not run; the per-user queue limit blocked submission. | PBS job `7838743` |
 | Aurora | Intel XPU | Not validated in this effort. | — |
 
-The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. The 240-cycle ACE2 4D-Var experiment has completed its first 120 cycles; the continuation is running on Sunspot. It is not yet a completed-run result.
+The Sunspot full-checkpoint smoke used the released 1° ACE2-ERA5 model and its matching 2020 initial condition and forcing. The 240-cycle ACE2 4D-Var experiment has now completed on Sunspot; the full-run diagnostics are below.
 
 ## Tests and model coverage
 
@@ -124,7 +124,7 @@ Logs remain on their respective systems:
 
 ## Full ACE2 240-cycle run on Sunspot
 
-Status snapshot: **2026-11-14 14:19 UTC**. The verified target is the
+The verified target is the
 `datascience` checkout at `/tegu/datascience/foremans/lw4dvar-torch` on
 `sunspot-uan-0001`.
 
@@ -141,7 +141,7 @@ Run code HEAD: `86326da931c0f54d93beabc6c8b746466439d5d4`.
 - Chunk A job `12483402` (`lw4dvar-ace2-240a`) finished with PBS
   `Exit_status = 0` after 15:16:18. Its log ends with `...JOB COMPLETED...`
   and contains 119 completed cycles from `2015-01-01T06` through
-  `2015-01-30T18`. With the pilot cycle, the first **120 of 240 cycles** are
+  `2015-01-30T18`. With the pilot cycle, the first **120 cycles** are
   complete: 6,000 optimizer epochs in total. Outputs are under
   `output/test_ace2_240cycle_6h_5d_50it/` and
   `output/test_ace2_240cycle_pilot_retry/`.
@@ -150,47 +150,50 @@ Run code HEAD: `86326da931c0f54d93beabc6c8b746466439d5d4`.
   attempts to run`); it has no application log or exit status.
 - Continuation retry `12483657` was also system-held and terminated after 21
   failed start attempts; it produced no application log or cycle output.
-- Fresh continuation job `12483718` was submitted with `ezpz submit` and the
-  `afterok:12483402` dependency. PBS reports it running on `x1921c4s7b0n0`
-  with a 23-hour walltime request; it had used 1:06:22 at the snapshot. It
-  loaded the `2015-01-30T18` restart and completed eight more cycles through
-  `2015-02-01T18`, bringing the total to **128 of 240 cycles**. Its log has
-  started the `2015-02-02T00` cycle. The run log is
-  `lw4dvar-ace2-240b-r3.o12483718`.
+- Fresh continuation job `12483718` (`lw4dvar-ace2-240b-r3`) was submitted
+  with `ezpz submit` and the `afterok:12483402` dependency. It ran on
+  `x1921c4s7b0n0` and completed with PBS `Exit_status = 0` after 15:29:51.
+  Its application log ends with `...JOB COMPLETED...` at
+  `2026-11-14 22:42:18 UTC`, and contains 120 completed cycles from
+  `2015-01-31T00` through `2015-03-01T18`. The output files are under
+  `output/test_ace2_240cycle_6h_5d_50it/`.
 - The earlier stride-2 attempt failed with Intel XPU
-  `UR_RESULT_ERROR_OUT_OF_RESOURCES`; the current run uses checkpoint stride
-  1. The full experiment remains **in progress** until job `12483718` finishes
-  with zero exit status and all 240 cycle outputs are verified.
+  `UR_RESULT_ERROR_OUT_OF_RESOURCES`; the completed run used checkpoint stride
+  1. Across the pilot, chunk A, and continuation, all **240 six-hour cycles**
+  and **12,000 optimizer epochs** completed for `2015-01-01T00` through
+  `2015-03-01T18`.
 
 The retrieved PBS stdout logs match the on-Sunspot files by SHA-256:
 pilot `6c3ed2cfadacf7919b4cdc1c4b9f831c53d31ff4e604aae19165463ef6f0114d`;
-chunk A `673783e1488000fc0c2908c3874d94e397a03a72cdce5849bbcc1b48e029d41e`.
+chunk A `673783e1488000fc0c2908c3874d94e397a03a72cdce5849bbcc1b48e029d41e`;
+continuation `d473d153f1e54f19c648b51d18d2966e984755281485b5af8b0a900e1ace49f7`.
 
-The pilot and chunk-A logs contain 120 complete 50-epoch optimization traces
-and paired +6-hour global 500 hPa height RMSE checks. Median objective change
-from epoch 1 to 50 was `-3.28%` per cycle. The median analysis-minus-control
-RMSE change was `+0.00 m`: error was lower in 47 cycles, higher in 52, and
-unchanged in 21. The optimizer reduced its own objective consistently, while
-the short-lead forecast check did not show a consistent improvement.
+Across all three logs there are 240 complete 50-epoch optimization traces and
+paired +6-hour global 500 hPa height RMSE checks. Median objective change from
+epoch 1 to 50 was `-3.314%` per cycle. Median analysis-minus-control RMSE
+change was `+0.00 m`: error was lower in 85 cycles, higher in 109, and
+unchanged in 46. The optimizer reduced its objective consistently; the
+same-valid-time +6-hour check did not show a consistent improvement and does
+not establish overall forecast skill.
 
-![ACE2 4D-Var first 120 of 240 Sunspot cycles: objective and +6-hour Z500 error changes](../figures/ace2_sunspot_240cycle_partial.png)
+![ACE2 4D-Var on Sunspot: all 240 cycles, objective and +6-hour Z500 error changes](../figures/ace2_sunspot_240cycle.png)
 
 The top panel shows each cycle's objective normalized to its own epoch-1 value;
 the line is the median across cycles and the shaded band is the 10th–90th
 percentile. The bottom panel shows the same-valid-time change in global Z500
-RMSE at +6 h; negative values mean lower error after assimilation. This is a
-partial-run diagnostic, not evidence that the full 240-cycle experiment has
-finished or that forecast skill improved overall. The figure is generated by
-[`plot_ace2_240cycle_partial.py`](../figures/plot_ace2_240cycle_partial.py)
-from the two Sunspot stdout logs. No intermediate CSV is tracked.
+RMSE at +6 h; negative values mean lower analysis error than control. The
+figure is generated by [`plot_ace2_240cycle.py`](../figures/plot_ace2_240cycle.py)
+from the three Sunspot stdout logs. No intermediate CSV is tracked.
 
 Rebuild it from the repository root after fetching those logs from Sunspot:
 
 ```bash
 ssh sunspot 'cat /tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-pilot.o12483400' > /tmp/lw4dvar-ace2-pilot.o12483400
 ssh sunspot 'cat /tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-240a.o12483402' > /tmp/lw4dvar-ace2-240a.o12483402
-uv run --no-project --with matplotlib python figures/plot_ace2_240cycle_partial.py \
-  --job-logs /tmp/lw4dvar-ace2-pilot.o12483400 /tmp/lw4dvar-ace2-240a.o12483402
+ssh sunspot 'cat /tegu/datascience/foremans/lw4dvar-torch/lw4dvar-ace2-240b-r3.o12483718' > /tmp/lw4dvar-ace2-240b-r3.o12483718
+uv run --no-project --with matplotlib python figures/plot_ace2_240cycle.py \
+  --job-logs /tmp/lw4dvar-ace2-pilot.o12483400 /tmp/lw4dvar-ace2-240a.o12483402 \
+  /tmp/lw4dvar-ace2-240b-r3.o12483718
 ```
 
 The old Polaris config points to `/lus/eagle/projects/moonshot-reanalysis/jwhitaker/psobs`; that path returns `Permission denied` for this account. The generic ACE2 config used to point to `/scratch3/NCEPDEV/da/Jeffrey.Whitaker/psobs`, which is not readable from Sunspot. It now reads `./psobs`; a Sunspot symlink points that relative path at the staged ISPD data.
