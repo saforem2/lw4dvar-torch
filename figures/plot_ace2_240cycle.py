@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import re
 
+import ambivalent
 import matplotlib as mpl
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -23,29 +24,22 @@ FIGURES = Path(__file__).resolve().parent
 OUT_PNG = FIGURES / "ace2_sunspot_240cycle.png"
 OUT_SVG = FIGURES / "ace2_sunspot_240cycle.svg"
 
+plt.style.use(ambivalent.STYLES['ambivalent'])
 mpl.rcParams.update(
     {
-        "font.family": "serif",
-        "font.serif": ["Libertinus Serif", "DejaVu Serif", "STIX Two Text"],
-        "font.sans-serif": ["Libertinus Sans", "DejaVu Sans"],
-        "font.monospace": ["JetBrains Mono", "Libertinus Mono", "DejaVu Sans Mono"],
-        "mathtext.fontset": "stix",
-        "pdf.fonttype": 42,
-        "ps.fonttype": 42,
+        "font.family": "Iosevka25 Condensed",
+        "font.size": 9,
+        "axes.labelsize": 9,
+        "axes.titleweight": "bold",
+        "legend.fontsize": 8,
         "svg.fonttype": "none",
         "svg.hashsalt": "lw4dvar-ace2-240cycle-full-v1",
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.titleweight": "bold",
-        "axes.labelsize": 9,
-        "font.size": 9,
-        "legend.fontsize": 8,
     }
 )
 
 BLUE = "#0072B2"
 GREEN = "#009E73"
-GRID = "#d8dee8"
+GRAY = "#838383"
 
 EPOCH_RE = re.compile(r"INFO - epoch=(\d+), lr=[^,]+, loss=([-+0-9.eE]+)")
 START_RE = re.compile(r"z500err bg\(t0\) (\S+)")
@@ -148,11 +142,10 @@ def make_figure() -> None:
         "Jan 1–Mar 1, 2015 · 240 six-hour cycles · 5-day windows · 50 epochs per cycle · PBS 12483400 + 12483402 + 12483718",
         ha="center",
         fontsize=8.3,
-        color="#4b5563",
     )
 
     epochs = np.arange(1, objective_traces.shape[1] + 1)
-    ax_obj.axhline(0, color="#6b7280", linestyle="--", linewidth=0.9, zorder=0)
+    ax_obj.axhline(0, color=GRAY, linestyle="--", linewidth=0.9, zorder=0)
     ax_obj.fill_between(epochs, epoch_p10, epoch_p90, color=BLUE, alpha=0.16, label="10th–90th percentile")
     ax_obj.plot(epochs, epoch_median, color=BLUE, linewidth=1.8, label="Median across cycles")
     ax_obj.set_title("A  Within-cycle objective change across 50 optimizer epochs", loc="left", pad=8)
@@ -160,7 +153,8 @@ def make_figure() -> None:
     ax_obj.set_ylabel("Change from epoch 1 (%)")
     ax_obj.set_xlim(1, 50)
     ax_obj.set_xticks([1, 10, 20, 30, 40, 50])
-    ax_obj.grid(axis="y", color=GRID, linewidth=0.7)
+    ax_obj.grid(axis="y")
+    ax_obj.grid(axis="x", visible=False)
     ax_obj.legend(frameon=False, loc="best")
     ax_obj.text(
         0.99,
@@ -170,10 +164,9 @@ def make_figure() -> None:
         ha="right",
         va="top",
         fontsize=8,
-        color=BLUE,
     )
 
-    ax_rmse.axhline(0, color="#6b7280", linestyle="--", linewidth=0.9, zorder=0)
+    ax_rmse.axhline(0, color=GRAY, linestyle="--", linewidth=0.9, zorder=0)
     ax_rmse.scatter(starts, error_change, s=13, color=GREEN, alpha=0.48, linewidths=0, label="Per-cycle change")
     ax_rmse.plot(
         starts,
@@ -184,19 +177,9 @@ def make_figure() -> None:
     )
     ax_rmse.set_title("B  +6 h global 500 hPa height RMSE: analysis − control", loc="left", pad=8)
     ax_rmse.set_ylabel("Global Z500 RMSE Δ (m)")
-    ax_rmse.grid(axis="y", color=GRID, linewidth=0.7)
+    ax_rmse.grid(axis="y")
+    ax_rmse.grid(axis="x", visible=False)
     ax_rmse.legend(frameon=False, loc="best")
-    ax_rmse.text(
-        0.99,
-        0.93,
-        f"median {median_error_change:+.2f} m · lower analysis {improved}/{len(rows)} · "
-        f"higher {worsened}/{len(rows)} · unchanged {unchanged}/{len(rows)}",
-        transform=ax_rmse.transAxes,
-        ha="right",
-        va="top",
-        fontsize=8,
-        color=GREEN,
-    )
     ax_rmse.set_xlim(starts[0] - timedelta(hours=12), starts[-1] + timedelta(hours=12))
     ax_rmse.xaxis.set_major_locator(mdates.DayLocator(interval=5))
     ax_rmse.xaxis.set_major_formatter(mdates.DateFormatter("%b %-d"))
@@ -208,11 +191,10 @@ def make_figure() -> None:
         "Negative Z500 change means lower analysis RMSE. This same-valid-time +6 h diagnostic is not an independent forecast-skill evaluation.",
         ha="center",
         fontsize=8,
-        color="#4b5563",
     )
     fig.tight_layout(rect=(0.04, 0.055, 0.99, 0.915), h_pad=1.6)
-    fig.savefig(OUT_PNG, dpi=220, bbox_inches="tight", facecolor="white")
-    fig.savefig(OUT_SVG, bbox_inches="tight", facecolor="white")
+    fig.savefig(OUT_PNG, dpi=220, bbox_inches="tight", transparent=True)
+    fig.savefig(OUT_SVG, bbox_inches="tight", transparent=True)
     svg = OUT_SVG.read_text(encoding="utf-8")
     OUT_SVG.write_text("\n".join(line.rstrip() for line in svg.splitlines()) + "\n", encoding="utf-8")
     plt.close(fig)
